@@ -1,0 +1,122 @@
+/* Osnovni stilovi */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header i Navigacija */
+header {
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    color: #667eea;
+    font-weight: 700;
+    font-size: 24px;
+}
+
+nav ul { list-style: none; display: flex; }
+nav ul li { margin-left: 25px; }
+nav ul li a { text-decoration: none; color: #555; font-weight: 600; transition: color 0.3s ease; }
+nav ul li a:hover { color: #667eea; }
+
+/* Glavni sadržaj - Hero sekcija */
+main { padding: 60px 0; }
+.hero-section { display: flex; align-items: center; justify-content: space-between; gap: 40px; }
+
+/* Lijeva strana - Dobrodošlica */
+.welcome-content { flex: 1; color: #fff; }
+.welcome-content h2 { font-size: 48px; font-weight: 700; line-height: 1.2; margin-bottom: 20px; }
+.welcome-content p { font-size: 18px; margin-bottom: 20px; }
+.welcome-content ul { list-style: none; margin-bottom: 30px; }
+.welcome-content ul li { margin-bottom: 10px; font-size: 16px; }
+
+/* --- NOVI STILOVI ZA FLIP EFEKAT --- */
+
+/* Kontejner koji omogućava 3D perspektivu */
+.form-flipper-container {
+    perspective: 1000px; /* Ovo je ključno za 3D efekat */
+    width: 100%;
+    max-width: 400px;
+    height: 480px; /* Fiksna visina da se ne mijenja tokom okretanja */
+}
+
+/* Unutrašnji kontejner koji se zapravo okreće */
+.flipper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s; /* Trajanje animacije okretanja */
+    transform-style: preserve-3d;
+}
+
+/* Klasa koja se dodaje JavaScriptom da bi se pokrenula animacija */
+.flipper.is-flipped {
+    transform: rotateY(180deg);
+}
+
+/* Prednja i zadnja strana - zajednički stilovi */
+.form-front, .form-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden; /* Za Safari */
+    backface-visibility: hidden; /* Sakriva stranu koja nije okrenuta ka nama */
+}
+
+/* Zadnja strana je u startu okrenuta */
+.form-back {
+    transform: rotateY(180deg);
+}
+/* --- KRAJ NOVIH STILOVA --- */
+
+/* Stiliziranje same forme (sada se zove .form-container) */
+.form-container {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.form-container h3 { margin-bottom: 25px; color: #333; font-weight: 600; text-align: center; }
+.input-group { margin-bottom: 20px; text-align: left; }
+.input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+.input-group input { width: 100%; padding: 12px 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
+.input-group input:focus { outline: none; border-color: #667eea; }
+
+.btn { width: 100%; padding: 12px; border: none; background-color: #667eea; color: white; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease; }
+.btn:hover { background-color: #5a6fd5; }
+
+/* Link za prebacivanje između formi */
+.form-switch-link { margin-top: 20px; font-size: 14px; text-align: center; }
+.form-switch-link a { color: #667eea; text-decoration: none; font-weight: 600; cursor: pointer; }
+.form-switch-link a:hover { text-decoration: underline; }
+
+
+/* Footer */
+footer { background: #333; color: #fff; text-align: center; padding: 20px 0; margin-top: 40px; }

@@ -1,0 +1,180 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #333;
+}
+
+/* KONTEJNER */
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 0 20px;
+}
+
+/* HEADER */
+header {
+    background: #fff;
+    padding: 20px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    color: #667eea;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.user-info {
+    font-weight: 600;
+    color: #555;
+}
+
+/* MAIN */
+main {
+    padding: 60px 0;
+}
+
+/* NASLOV */
+.dashboard-title {
+    text-align: center;
+    color: #fff;
+    margin-bottom: 50px;
+}
+
+.dashboard-title h2 {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.dashboard-title p {
+    font-size: 18px;
+    opacity: 0.9;
+}
+
+/* GRID KVIZOVA */
+.quiz-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+/* KARTICE */
+.quiz-card {
+    background: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.quiz-icon img {
+    width: 120px;
+    height: 110px;
+}
+
+.quiz-icon img {
+    width: 130px;
+    height: 100px;
+    object-fit: contain;
+}
+
+
+.tech-icon img {
+    width: 150px;
+    height: auto;
+}
+
+
+.quiz-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 25px 40px rgba(0,0,0,0.25);
+}
+
+.quiz-icon {
+    font-size: 50px;
+    margin-bottom: 20px;
+}
+
+.quiz-card h3 {
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.quiz-card p {
+    font-size: 15px;
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.quiz-card a {
+    text-decoration: none;
+    background: #667eea;
+    color: #fff;
+    padding: 12px 30px;
+    border-radius: 30px;
+    font-weight: 600;
+    transition: background 0.3s ease;
+}
+
+.quiz-card a:hover {
+    background: #5a6fd5;
+}
+
+/* STATISTIKA */
+.extra-section {
+    margin-top: 80px;
+    background: #fff;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.extra-section h3 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    text-align: center;
+}
+
+.stat-box {
+    background: #f5f6ff;
+    padding: 25px;
+    border-radius: 12px;
+}
+
+.stat-box span {
+    font-size: 32px;
+    font-weight: 700;
+    color: #667eea;
+}
+
+.stat-box p {
+    font-size: 14px;
+    color: #555;
+}
+
+/* FOOTER */
+footer {
+    margin-top: 60px;
+    background: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+}
