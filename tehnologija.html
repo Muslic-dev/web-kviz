@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>IT & Tehnologija | Kviz</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -13,6 +12,7 @@
             background: linear-gradient(135deg, #667eea, #764ba2);
             margin: 0;
             padding: 0;
+            user-select: none;
         }
 
         .quiz-container {
@@ -25,9 +25,7 @@
             text-align: center;
         }
 
-        h2 {
-            margin-bottom: 20px;
-        }
+        h2 { margin-bottom: 20px; }
 
         .intro p {
             font-size: 16px;
@@ -44,11 +42,10 @@
             border-radius: 30px;
             cursor: pointer;
             margin-top: 20px;
+            transition: background 0.3s;
         }
 
-        .btn:hover {
-            background: #5a6fd5;
-        }
+        .btn:hover { background: #5a6fd5; }
 
         .timer {
             font-size: 18px;
@@ -69,43 +66,46 @@
             transition: 0.3s;
         }
 
-        .answers button.correct {
-            background: #4CAF50;
-            color: #fff;
-        }
-
-        .answers button.wrong {
-            background: #e74c3c;
-            color: #fff;
-        }
-
-        .answers button:disabled {
-            cursor: default;
-        }
+        .answers button.correct { background: #4CAF50 !important; color: #fff; }
+        .answers button.wrong { background: #e74c3c !important; color: #fff; }
+        .answers button:disabled { cursor: default; }
 
         .result {
             font-size: 22px;
             font-weight: 700;
             color: #667eea;
         }
+
+        .result button {
+            display: inline-block;
+            background: #ff6b6b;
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        .result button:hover { background: #e55a5a; }
     </style>
 </head>
 <body>
 
 <div class="quiz-container" id="quizBox">
 
-    <!-- START SCREEN -->
     <div class="intro" id="startScreen">
         <h2>💻 IT & Tehnologija</h2>
         <p>Da li ste spremni za tehnološki izazov?</p>
         <p>📌 Kviz sadrži <strong>15 pitanja</strong></p>
         <p>⏱ Za svako pitanje imate <strong>15 sekundi</strong></p>
-        <p>🧠 Pitanja iz IT-a, interneta i programiranja</p>
+        <p>🚫 <strong>Pažnja:</strong> Refresh stranice preskače pitanje!</p>
 
         <button class="btn" onclick="startQuiz()">Započni kviz</button>
     </div>
 
-    <!-- QUIZ -->
     <div id="quizScreen" style="display:none;">
         <div class="timer">⏱ Vrijeme: <span id="time">15</span>s</div>
         <h2 id="question"></h2>
@@ -134,7 +134,7 @@ const questions = [
     { q: "Šta je RAM?", a: ["Trajna memorija", "Radna memorija", "Grafička kartica"], c: 1 },
     { q: "Koji jezik se koristi za baze podataka?", a: ["SQL", "HTML", "CSS"], c: 0 },
     { q: "Šta je browser?", a: ["Pretraživač", "Server", "Operativni sistem"], c: 0 },
-    { q: "Koji je simbol za komentar u CSS-u?", a: ["//", "<!-- -->", "/* */"], c: 2 },
+    { q: "Koji je simbol za komentar u CSS-u?", a: ["//", "", "/* */"], c: 2 },
     { q: "Koja ekstenzija je za web stranicu?", a: [".exe", ".html", ".mp3"], c: 1 }
 ];
 
@@ -147,7 +147,47 @@ const questionEl = document.getElementById("question");
 const buttons = document.querySelectorAll(".answers button");
 const timeEl = document.getElementById("time");
 
+// 1. BLOKADA TASTATURE
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F5' || (e.ctrlKey && e.key === 'r') || (e.metaKey && e.key === 'r')) {
+        e.preventDefault();
+        alert("Refresh je zabranjen tokom kviza!");
+    }
+});
+
+// 2. BLOKADA BACK DUGMETA
+history.pushState(null, null, location.href);
+window.onpopstate = function () {
+    history.pushState(null, null, location.href);
+    alert("Prvo završite kviz!");
+};
+
+// 3. ANTI-CHEAT REFRESH LOGIKA
+window.onload = function() {
+    if (localStorage.getItem("itKvizAktivan") === "da") {
+        let savedIndex = parseInt(localStorage.getItem("itKvizIndex")) || 0;
+        let savedScore = parseInt(localStorage.getItem("itKvizScore")) || 0;
+        
+        index = savedIndex + 1; // Kazna: preskoči trenutno
+        score = savedScore;
+        
+        document.getElementById("startScreen").style.display = "none";
+        document.getElementById("quizScreen").style.display = "block";
+        
+        if(index < questions.length) {
+            alert("Refresh detektovan! Pitanje je poništeno.");
+            loadQuestion();
+        } else {
+            finishQuiz();
+        }
+    }
+};
+
 function startQuiz() {
+    localStorage.setItem("itKvizAktivan", "da");
+    index = 0;
+    score = 0;
+    saveProgress();
     document.getElementById("startScreen").style.display = "none";
     document.getElementById("quizScreen").style.display = "block";
     loadQuestion();
@@ -155,26 +195,21 @@ function startQuiz() {
 
 function loadQuestion() {
     if (index >= questions.length) {
-        document.getElementById("quizBox").innerHTML = `
-            <div class="result">
-                🎉 Kviz završen!<br><br>
-                Tačnih odgovora: ${score} / ${questions.length}<br><br>
-                <button class="btn" onclick="window.location.href='index2.html'">
-                    ⬅ Nazad
-                </button>
-            </div>`;
+        finishQuiz();
         return;
     }
 
     time = 15;
     timeEl.textContent = time;
-
     questionEl.textContent = questions[index].q;
+
     buttons.forEach((btn, i) => {
         btn.textContent = questions[index].a[i];
         btn.className = "";
         btn.disabled = false;
     });
+
+    saveProgress();
 
     clearInterval(timer);
     timer = setInterval(() => {
@@ -189,7 +224,6 @@ function loadQuestion() {
 
 function checkAnswer(answer) {
     clearInterval(timer);
-
     buttons.forEach(btn => btn.disabled = true);
 
     if (answer === questions[index].c) {
@@ -200,10 +234,32 @@ function checkAnswer(answer) {
         buttons[questions[index].c].classList.add("correct");
     }
 
+    saveProgress();
+
     setTimeout(() => {
         index++;
         loadQuestion();
     }, 1200);
+}
+
+function saveProgress() {
+    localStorage.setItem("itKvizIndex", index);
+    localStorage.setItem("itKvizScore", score);
+}
+
+function finishQuiz() {
+    localStorage.removeItem("itKvizAktivan");
+    localStorage.removeItem("itKvizIndex");
+    localStorage.removeItem("itKvizScore");
+
+    document.getElementById("quizBox").innerHTML = `
+        <div class="result">
+            🎉 Kviz završen!<br><br>
+            Tačnih odgovora: ${score} / ${questions.length}<br><br>
+            <button onclick="window.location.href='index2.html'">
+                Nazad na kvizove
+            </button>
+        </div>`;
 }
 </script>
 
