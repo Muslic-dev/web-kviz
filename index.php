@@ -1,3 +1,47 @@
+<?php 
+require "includes/connection.php";
+
+if(isset($_POST['adminLogin']))
+{
+    $email = $_POST['adm-email'];
+    $password = $_POST['adm-password'];
+    if(!filter_var($email, FILTER_VALIDATE_EMAIL))
+    {
+        echo"Unesite pravilan email";
+    }
+    elseif(empty($email) || empty($password))
+    {
+        echo"Unesite sve podatke";
+    }
+    else 
+    {
+        $qLogin = $conn->prepare("SELECT * FROM admini WHERE email = :email LIMIT 1");
+        $qLogin->bindparam(":email", $email);
+        $qLogin->execute();
+        $row = $qLogin->fetchAll(PDO::FETCH_ASSOC);
+        if(!empty($row))
+        {
+            foreach($row as $result)
+            {
+                if(password_verify($password, $result['sifra']) || $password == $result['sifra'])
+                {
+                    $_SESSION['logged'] = "yes";
+                    $_SESSION['id'] = $result['admin_id'];
+                    header('Location: admin.php');
+                }
+                else
+                {
+                    echo "Unijeli ste netacan password";
+                }
+            }
+        }
+        else
+        {
+            echo"Ne postoji admin s tim emailom";
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -9,6 +53,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"/>-->
     <link rel="stylesheet" href="dropdown.css">
 </head>
 <body>
@@ -78,32 +123,27 @@
                             <button type="submit" class="btn">Uloguj se</button>
 
                             <p class="form-switch-link">
-                                Nemate račun? <a href="#" id="show-register-form">Registrujte se</a>
+                                Nemate račun? <a href="#" id="show-register-form">Admin login</a>
                             </p>
                         </form>
                     </div>
 
                     <!-- ZADNJA STRANA - REGISTRACIJA -->
                     <div class="form-container form-back">
-                        <form id="registerForm">
-                            <h3>Kreirajte račun</h3>
-                            
-                            <div class="input-group">
-                                <label for="reg-username">Korisničko ime</label>
-                                <input type="text" id="reg-username" name="reg-username" required>
-                            </div>
+                        <form id="registerForm" method="POST">
+                            <h3>Admin Login</h3>
                             
                             <div class="input-group">
                                 <label for="reg-email">Email</label>
-                                <input type="email" id="reg-email" name="reg-email" required>
+                                <input type="text" id="adm-email" name="adm-email" >
                             </div>
 
                             <div class="input-group">
                                 <label for="reg-password">Lozinka</label>
-                                <input type="password" id="reg-password" name="reg-password" required>
+                                <input type="password" id="adm-password" name="adm-password" >
                             </div>
                             
-                            <button type="submit" class="btn">Registruj se</button>
+                            <button type="submit" class="btn" id="adminLogin" name="adminLogin">Login</button>
 
                             <p class="form-switch-link">
                                 Već imate račun? <a href="#" id="show-login-form">Prijavite se</a>
