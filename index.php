@@ -1,45 +1,80 @@
 <?php 
 require "includes/connection.php";
+// session_start(); 
 
-if(isset($_POST['adminLogin']))
-{
-    $email = $_POST['adm-email'];
+$error = "";
+
+// --- LOGIKA ZA PRIJAVU (ZADNJA STRANA) ---
+if(isset($_POST['adminLogin'])) {
+    $identity = $_POST['adm-email']; 
     $password = $_POST['adm-password'];
-    if(!filter_var($email, FILTER_VALIDATE_EMAIL))
-    {
-        echo"Unesite pravilan email";
-    }
-    elseif(empty($email) || empty($password))
-    {
-        echo"Unesite sve podatke";
-    }
-    else 
-    {
-        $qLogin = $conn->prepare("SELECT * FROM admini WHERE email = :email LIMIT 1");
-        $qLogin->bindparam(":email", $email);
-        $qLogin->execute();
-        $row = $qLogin->fetchAll(PDO::FETCH_ASSOC);
-        if(!empty($row))
-        {
-            foreach($row as $result)
-            {
-                if(password_verify($password, $result['sifra']) || $password == $result['sifra'])
-                {
-                    $_SESSION['logged'] = "yes";
-                    $_SESSION['id'] = $result['admin_id'];
-                    header('Location: admin.php');
+
+    if(empty($identity) || empty($password)) {
+        $error = "Unesite sve podatke";
+    } else {
+        $qAdmin = $conn->prepare("SELECT * FROM admini WHERE email = :email LIMIT 1");
+        $qAdmin->execute([':email' => $identity]);
+        $admin = $qAdmin->fetch(PDO::FETCH_ASSOC);
+
+        if($admin) {
+            if(password_verify($password, $admin['sifra']) || $password == $admin['sifra']) {
+                $_SESSION['logged'] = "yes";
+                $_SESSION['id'] = $admin['admin_id'];
+                header('Location: admin.php');
+                exit();
+            } else {
+                $error = "Pogrešna lozinka za admina!";
+            }
+        } else {
+            $qUser = $conn->prepare("SELECT * FROM korisnici WHERE korisnicko_ime = :uname LIMIT 1");
+            $qUser->execute([':uname' => $identity]);
+            $user = $qUser->fetch(PDO::FETCH_ASSOC);
+
+            if($user) {
+                if(password_verify($password, $user['sifra'])) {
+                    $_SESSION['user_logged'] = true;
+                    $_SESSION['username'] = $user['korisnicko_ime'];
+                    header("Location: index2.php");
+                    exit();
+                } else {
+                    $error = "Pogrešna lozinka za korisnika!";
                 }
-                else
-                {
-                    echo "Unijeli ste netacan password";
-                }
+            } else {
+                $error = "Nalog ne postoji!";
             }
         }
-        else
-        {
-            echo"Ne postoji admin s tim emailom";
-        }
     }
+}
+
+// --- LOGIKA ZA REGISTRACIJU (PREDNJA STRANA) ---
+if(isset($_POST['userLogin'])) {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+    $razred = $_POST['razred'];
+
+    if(!empty($username) && !empty($password) && !empty($razred)) {
+        $check = $conn->prepare("SELECT * FROM korisnici WHERE korisnicko_ime = ?");
+        $check->execute([$username]);
+        $userExist = $check->fetch();
+
+        if($userExist) {
+            if(password_verify($password, $userExist['sifra'])) {
+                $_SESSION['user_logged'] = true;
+                $_SESSION['username'] = $userExist['korisnicko_ime'];
+                header("Location: index2.php");
+                exit();
+            } else { $error = "Zauzeto ime ili pogrešna lozinka!"; }
+        } else {
+            $hashed_pw = password_hash($password, PASSWORD_DEFAULT);
+            $insert = $conn->prepare("INSERT INTO korisnici (korisnicko_ime, sifra, razred, email) VALUES (?, ?, ?, ?)");
+            if($insert->execute([$username, $hashed_pw, $razred, $username."@kviz.ba"])) {
+                $_SESSION['user_logged'] = true;
+                $_SESSION['username'] = $username;
+                header("Location: index2.php");
+                exit();
+            }
+        }
+    } else { $error = "Popunite sva polja!"; }
 }
 ?>
 <!DOCTYPE html>
@@ -53,8 +88,39 @@ if(isset($_POST['adminLogin']))
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-    <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"/>-->
     <link rel="stylesheet" href="dropdown.css">
+    <style>
+        .error-box { background: #fee2e2; color: #b91c1c; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; border: 1px solid #fecaca; text-align: center; }
+        
+        /* NOVI DIZAJN: GORNJA NAVIGACIJA UNUTAR FORME */
+        .form-nav-header {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 5px;
+            margin-bottom: 25px;
+        }
+        .form-nav-header a {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+        .form-nav-header a.active {
+            background: #ffffff;
+            color: #2563eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .form-nav-header a:hover:not(.active) {
+            color: #334155;
+            background: #e2e8f0;
+        }
+    </style>
 </head>
 <body>
 
@@ -63,7 +129,7 @@ if(isset($_POST['adminLogin']))
             <h1 class="logo">Kvizomanija</h1>
             <nav>
                 <ul>
-                    <li><a href="#">Početna</a></li>
+                    <li><a href="index.php">Početna</a></li>
                     <li><a href="#">Kvizovi</a></li>
                     <li><a href="#">Rang Lista</a></li>
                 </ul>
@@ -73,41 +139,43 @@ if(isset($_POST['adminLogin']))
 
     <main>
         <div class="container hero-section">
-            <!-- Lijeva strana sa sadržajem -->
             <div class="welcome-content">
                 <h2>Testirajte Svoje Znanje!</h2>
-                <p>Pridružite se našoj zajednici i takmičite se u uzbudljivim kvizovima. Pokažite šta znate i osvojite prvo mjesto na rang listi!</p>
+                <p>Pridružite se zajednici i pokažite šta znate u uzbudljivim kvizovima.</p>
+                
+                <?php if($error != ""): ?>
+                    <div class="error-box"><i class="bi bi-exclamation-triangle"></i> <?= $error ?></div>
+                <?php endif; ?>
+
                 <ul>
-                    <li>✓ Tri različite kategorije kvizova</li>
                     <li>✓ 15 izazovnih pitanja po kvizu</li>
-                    <li>✓ Vremenski ograničeni odgovori za dodatni adrenalin</li>
-                    <li>✓ Pratite svoj napredak i uporedite se s drugima</li>
+                    <li>✓ Tri različite kategorije</li>
+                    <li>✓ Pratite svoj napredak na tabeli</li>
                 </ul>
             </div>
 
-            <!-- Desna strana sa formom koja se okreće -->
             <div class="form-flipper-container">
                 <div class="flipper">
-                    <!-- PREDNJA STRANA - LOGIN -->
                     <div class="form-container form-front">
-                        <form id="loginForm">
-                            <h3>Prijavite se</h3>
-                            
+                        <div class="form-nav-header">
+                            <a href="#" class="active">Nova prijava</a>
+                            <a href="#" id="show-register-form">Već imam nalog</a>
+                        </div>
+
+                        <form method="POST" action="">
                             <div class="input-group">
-                                <label for="username">Korisničko ime</label>
-                                <input type="text" id="username" name="username" placeholder="npr. korisnik123" required>
+                                <label>Korisničko ime</label>
+                                <input type="text" name="username" placeholder="npr. korisnik123" required>
                             </div>
-                            
                             <div class="input-group">
-                                <label for="password">Lozinka</label>
-                                <input type="password" id="password" name="password" placeholder="Unesite vašu lozinku" required>
+                                <label>Lozinka</label>
+                                <input type="password" name="password" placeholder="Lozinka" required>
                             </div>
-                            
                             <div class="input-group">
                                 <div class="dropdown-container mb-3 w-100">
                                     <div class="input-container">
-                                        <label for="Razred">Razred</label>
-                                        <input type="text" class="selected" id="razred" name="razred" placeholder="Razred" readonly required>
+                                        <label>Vaš razred</label>
+                                        <input type="text" class="selected" id="razred_display_front" name="razred" placeholder="Odaberite" readonly required>
                                         <i class="bi bi-arrow-down-short" id="arrow"></i>
                                     </div>
                                     <ul class="options-container">
@@ -118,36 +186,26 @@ if(isset($_POST['adminLogin']))
                                     </ul>
                                 </div>
                             </div>
-
-
-                            <button type="submit" class="btn">Uloguj se</button>
-
-                            <p class="form-switch-link">
-                                Nemate račun? <a href="#" id="show-register-form">Admin login</a>
-                            </p>
+                            <button type="submit" name="userLogin" class="btn" style="width:100%">Započni kviz</button>
                         </form>
                     </div>
 
-                    <!-- ZADNJA STRANA - REGISTRACIJA -->
                     <div class="form-container form-back">
-                        <form id="registerForm" method="POST">
-                            <h3>Admin Login</h3>
-                            
-                            <div class="input-group">
-                                <label for="reg-email">Email</label>
-                                <input type="text" id="adm-email" name="adm-email" >
-                            </div>
+                        <div class="form-nav-header">
+                            <a href="#" id="show-login-form">Nova prijava</a>
+                            <a href="#" class="active">Prijavi se</a>
+                        </div>
 
+                        <form method="POST" action="">
                             <div class="input-group">
-                                <label for="reg-password">Lozinka</label>
-                                <input type="password" id="adm-password" name="adm-password" >
+                                <label>Korisničko ime / Email</label>
+                                <input type="text" name="adm-email" placeholder="Unesite podatke" required>
                             </div>
-                            
-                            <button type="submit" class="btn" id="adminLogin" name="adminLogin">Login</button>
-
-                            <p class="form-switch-link">
-                                Već imate račun? <a href="#" id="show-login-form">Prijavite se</a>
-                            </p>
+                            <div class="input-group">
+                                <label>Lozinka</label>
+                                <input type="password" name="adm-password" placeholder="Lozinka" required>
+                            </div>
+                            <button type="submit" name="adminLogin" class="btn" style="width:100%">Uloguj se</button>
                         </form>
                     </div>
                 </div>
@@ -157,37 +215,37 @@ if(isset($_POST['adminLogin']))
 
     <footer>
         <div class="container">
-            <p>&copy; 2024 Kvizomanija. Sva prava zadržana. Projekat za školu.</p>
+            <p>&copy; 2024 Kvizomanija. Sva prava zadržana.</p>
         </div>
     </footer>
 
-    <script>
-document.getElementById("loginForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    window.location.href = "index2.html";
-});
-</script>
-
-<script src="dropdown.js"></script>
-
-    <!-- JavaScript za flip efekat -->
+    <script src="dropdown.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const flipper = document.querySelector('.flipper');
-            const showRegisterLink = document.querySelector('#show-register-form');
-            const showLoginLink = document.querySelector('#show-login-form');
+            
+            // Dugmad za prebacivanje (switch) unutar headera forme
+            const toBack = document.querySelector('#show-register-form');
+            const toFront = document.querySelector('#show-login-form');
 
-            showRegisterLink.addEventListener('click', function(e) {
+            toBack.addEventListener('click', (e) => {
                 e.preventDefault();
                 flipper.classList.add('is-flipped');
             });
 
-            showLoginLink.addEventListener('click', function(e) {
+            toFront.addEventListener('click', (e) => {
                 e.preventDefault();
                 flipper.classList.remove('is-flipped');
             });
+
+            // Dropdown logika
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    const display = document.getElementById('razred_display_front');
+                    if(display) display.value = this.innerText.trim();
+                });
+            });
         });
     </script>
-
 </body>
 </html>
