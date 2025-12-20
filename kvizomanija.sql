@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 20, 2025 at 03:36 PM
+-- Generation Time: Dec 21, 2025 at 12:03 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -61,7 +61,6 @@ CREATE TABLE `korisnici` (
 
 INSERT INTO `korisnici` (`korisnik_id`, `korisnicko_ime`, `email`, `sifra`, `razred`, `datum_registracije`) VALUES
 (1, 'emel', 'emel@kviz.ba', '$2y$10$ih1UkH6ZT72KKTOZwR0pWuJXd7UPSfMSzB3aj5X40lGDqy3KO3SlC', 'IV', '2025-12-19 21:16:04'),
-(2, 'haris', 'haris@kviz.ba', '$2y$10$J9jgXrwLO66jkUFfedYyLuzLXriRMx0tpbOj4TryXy3NTaCQq1pAy', 'III', '2025-12-19 22:16:22'),
 (3, 'murat', 'murat@kviz.ba', '$2y$10$7qC.uY1TJ0K6pWJHbuvSgeKo7gGcd8HxjXtS8g5s3ZF/Af1Uv8gJ.', 'I', '2025-12-19 22:33:08');
 
 -- --------------------------------------------------------
@@ -72,6 +71,7 @@ INSERT INTO `korisnici` (`korisnik_id`, `korisnicko_ime`, `email`, `sifra`, `raz
 
 CREATE TABLE `kvizovi` (
   `kviz_id` int(11) NOT NULL,
+  `naziv_kviza` varchar(100) DEFAULT NULL,
   `admin_id` int(11) DEFAULT NULL,
   `pocetak` datetime DEFAULT NULL,
   `rok_predaje` datetime DEFAULT NULL,
@@ -83,10 +83,10 @@ CREATE TABLE `kvizovi` (
 -- Dumping data for table `kvizovi`
 --
 
-INSERT INTO `kvizovi` (`kviz_id`, `admin_id`, `pocetak`, `rok_predaje`, `vremensko_ogranicenje`, `broj_pitanja`) VALUES
-(1, 1, NULL, NULL, 15, 15),
-(2, 1, NULL, NULL, 15, 15),
-(3, 1, NULL, NULL, 15, 15);
+INSERT INTO `kvizovi` (`kviz_id`, `naziv_kviza`, `admin_id`, `pocetak`, `rok_predaje`, `vremensko_ogranicenje`, `broj_pitanja`) VALUES
+(1, 'Opće znanje', 1, NULL, NULL, 15, 15),
+(2, 'IT & Tehnologija', 1, NULL, NULL, 15, 15),
+(3, 'Sport', 1, NULL, NULL, 15, 15);
 
 -- --------------------------------------------------------
 
@@ -110,7 +110,11 @@ CREATE TABLE `odgovori` (
 CREATE TABLE `pitanja` (
   `pitanje_id` int(11) NOT NULL,
   `kviz_id` int(11) DEFAULT NULL,
-  `tekst_pitanja` text DEFAULT NULL
+  `tekst_pitanja` text DEFAULT NULL,
+  `opcija_a` text DEFAULT NULL,
+  `opcija_b` text DEFAULT NULL,
+  `opcija_c` text DEFAULT NULL,
+  `tacan_odgovor` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -154,7 +158,19 @@ INSERT INTO `rezultati` (`rezultat_id`, `kviz_id`, `ime`, `prezime`, `razred_odj
 (20, 2, 'murat', '5 / 15', 'Učen', NULL, '2025-12-20 14:31:12', 0),
 (21, 2, 'murat', 'Započeto', 'Učen', NULL, '2025-12-20 14:33:08', 0),
 (22, 2, 'murat', '0 / 3', 'Učen', NULL, '2025-12-20 14:34:17', 0),
-(23, 2, 'murat', 'Započeto', 'Učen', NULL, '2025-12-20 14:34:26', 0);
+(23, 2, 'murat', 'Započeto', 'Učen', NULL, '2025-12-20 14:34:26', 0),
+(24, 2, 'emel', '2 / 5', 'Učen', NULL, '2025-12-20 21:59:04', 6),
+(25, 2, 'emel', '3 / 5', 'Učen', NULL, '2025-12-20 21:59:16', 8),
+(26, 2, 'emel', '3 / 5', 'Učen', NULL, '2025-12-20 21:59:54', 10),
+(27, 2, 'emel', '3 / 5', 'Učen', NULL, '2025-12-20 22:00:28', 12),
+(28, 2, 'emel', '0 / 5', 'Učen', NULL, '2025-12-20 22:06:11', 4),
+(29, 2, 'emel', '2 / 5', 'Učen', NULL, '2025-12-20 22:07:11', 6),
+(30, 2, 'emel', '3 / 5', 'Učen', NULL, '2025-12-20 22:09:00', 9),
+(31, 2, 'ilija', '3 / 5', 'Učen', NULL, '2025-12-20 22:14:52', 8),
+(32, 2, 'ilija', '9 / 15', 'Učen', NULL, '2025-12-20 22:17:08', 40),
+(33, 1, 'ilija', '9 / 15', 'Učen', NULL, '2025-12-20 22:20:14', 41),
+(34, 3, 'ilija', '7 / 15', 'Učen', NULL, '2025-12-20 22:22:13', 28),
+(35, 2, 'ilija', '5 / 15', 'Učen', NULL, '2025-12-20 22:39:15', 26);
 
 --
 -- Indexes for dumped tables
@@ -216,13 +232,13 @@ ALTER TABLE `admini`
 -- AUTO_INCREMENT for table `korisnici`
 --
 ALTER TABLE `korisnici`
-  MODIFY `korisnik_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `korisnik_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `kvizovi`
 --
 ALTER TABLE `kvizovi`
-  MODIFY `kviz_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `kviz_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `odgovori`
@@ -234,13 +250,13 @@ ALTER TABLE `odgovori`
 -- AUTO_INCREMENT for table `pitanja`
 --
 ALTER TABLE `pitanja`
-  MODIFY `pitanje_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `pitanje_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `rezultati`
 --
 ALTER TABLE `rezultati`
-  MODIFY `rezultat_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `rezultat_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- Constraints for dumped tables
@@ -262,12 +278,14 @@ ALTER TABLE `odgovori`
 -- Constraints for table `pitanja`
 --
 ALTER TABLE `pitanja`
+  ADD CONSTRAINT `fk_pitanja_kviz` FOREIGN KEY (`kviz_id`) REFERENCES `kvizovi` (`kviz_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `pitanja_ibfk_1` FOREIGN KEY (`kviz_id`) REFERENCES `kvizovi` (`kviz_id`);
 
 --
 -- Constraints for table `rezultati`
 --
 ALTER TABLE `rezultati`
+  ADD CONSTRAINT `fk_rezultati_kviz` FOREIGN KEY (`kviz_id`) REFERENCES `kvizovi` (`kviz_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `rezultati_ibfk_1` FOREIGN KEY (`kviz_id`) REFERENCES `kvizovi` (`kviz_id`);
 COMMIT;
 
