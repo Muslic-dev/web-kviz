@@ -29,6 +29,24 @@ header .container {
     justify-content: space-between;
     align-items: center;
 }
+.logout-btn {
+    background: #ef4444;
+    color: white;
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: background 0.3s;
+    margin-left: 15px;
+}
+.logout-btn:hover {
+    background: #dc2626;
+    color: white;
+}
+.header-actions {
+    display: flex;
+    align-items: center;
+}
 
 .logo {
     color: #667eea;

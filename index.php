@@ -127,13 +127,6 @@ if(isset($_POST['userLogin'])) {
     <header>
         <div class="container">
             <h1 class="logo">Kvizomanija</h1>
-            <nav>
-                <ul>
-                    <li><a href="index.php">Početna</a></li>
-                    <li><a href="#">Kvizovi</a></li>
-                    <li><a href="#">Rang Lista</a></li>
-                </ul>
-            </nav>
         </div>
     </header>
 
@@ -215,7 +208,7 @@ if(isset($_POST['userLogin'])) {
 
     <footer>
         <div class="container">
-            <p>&copy; 2024 Kvizomanija. Sva prava zadržana.</p>
+            <p>&copy; 2025 Kvizomanija. Sva prava zadržana.</p>
         </div>
     </footer>
 

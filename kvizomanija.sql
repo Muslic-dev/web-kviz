@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 20, 2025 at 12:04 AM
+-- Generation Time: Dec 20, 2025 at 03:36 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -126,21 +126,35 @@ CREATE TABLE `rezultati` (
   `prezime` varchar(30) DEFAULT NULL,
   `razred_odjeljenje` varchar(4) DEFAULT NULL,
   `odgovori` text DEFAULT NULL,
-  `vrijeme_zapoceto` timestamp NOT NULL DEFAULT current_timestamp()
+  `vrijeme_zapoceto` timestamp NOT NULL DEFAULT current_timestamp(),
+  `sekunde` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `rezultati`
 --
 
-INSERT INTO `rezultati` (`rezultat_id`, `kviz_id`, `ime`, `prezime`, `razred_odjeljenje`, `odgovori`, `vrijeme_zapoceto`) VALUES
-(4, 1, 'emel', 'Započeto', 'Učen', NULL, '2025-12-19 22:13:25'),
-(5, 1, 'emel', 'Započeto', 'Učen', NULL, '2025-12-19 22:13:25'),
-(6, 1, 'haris', 'Započeto', 'Učen', NULL, '2025-12-19 22:16:32'),
-(7, 1, 'emel', 'Započeto', 'Učen', NULL, '2025-12-19 22:42:56'),
-(8, 1, 'emel', '6 / 15', 'Učen', NULL, '2025-12-19 22:57:25'),
-(9, 2, 'emel', '6 / 15', 'Učen', NULL, '2025-12-19 23:00:21'),
-(10, 3, 'emel', '3 / 15', 'Učen', NULL, '2025-12-19 23:01:07');
+INSERT INTO `rezultati` (`rezultat_id`, `kviz_id`, `ime`, `prezime`, `razred_odjeljenje`, `odgovori`, `vrijeme_zapoceto`, `sekunde`) VALUES
+(4, 1, 'emel', 'Započeto', 'Učen', NULL, '2025-12-19 22:13:25', 0),
+(5, 1, 'emel', 'Započeto', 'Učen', NULL, '2025-12-19 22:13:25', 0),
+(6, 1, 'haris', 'Započeto', 'Učen', NULL, '2025-12-19 22:16:32', 0),
+(7, 1, 'emel', 'Započeto', 'Učen', NULL, '2025-12-19 22:42:56', 0),
+(8, 1, 'emel', '6 / 15', 'Učen', NULL, '2025-12-19 22:57:25', 0),
+(9, 2, 'emel', '6 / 15', 'Učen', NULL, '2025-12-19 23:00:21', 0),
+(10, 3, 'emel', '3 / 15', 'Učen', NULL, '2025-12-19 23:01:07', 0),
+(11, 1, 'murat', '10 / 15', 'Učen', NULL, '2025-12-20 13:43:19', 0),
+(12, 2, 'murat', '2 / 15', 'Učen', NULL, '2025-12-20 13:47:46', 0),
+(13, 2, 'murat', '6 / 15', 'Učen', NULL, '2025-12-20 14:16:15', 0),
+(14, 2, 'murat', '8 / 15', 'Učen', NULL, '2025-12-20 14:19:16', 0),
+(15, 2, 'murat', '6 / 15', 'Učen', NULL, '2025-12-20 14:19:54', 0),
+(16, 2, 'murat', '6 / 15', 'Učen', NULL, '2025-12-20 14:22:20', 0),
+(17, 2, 'murat', 'Započeto', 'Učen', NULL, '2025-12-20 14:27:35', 0),
+(18, 2, 'murat', 'Započeto', 'Učen', NULL, '2025-12-20 14:28:09', 0),
+(19, 2, 'murat', '6 / 15', 'Učen', NULL, '2025-12-20 14:29:30', 0),
+(20, 2, 'murat', '5 / 15', 'Učen', NULL, '2025-12-20 14:31:12', 0),
+(21, 2, 'murat', 'Započeto', 'Učen', NULL, '2025-12-20 14:33:08', 0),
+(22, 2, 'murat', '0 / 3', 'Učen', NULL, '2025-12-20 14:34:17', 0),
+(23, 2, 'murat', 'Započeto', 'Učen', NULL, '2025-12-20 14:34:26', 0);
 
 --
 -- Indexes for dumped tables
@@ -226,7 +240,7 @@ ALTER TABLE `pitanja`
 -- AUTO_INCREMENT for table `rezultati`
 --
 ALTER TABLE `rezultati`
-  MODIFY `rezultat_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `rezultat_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- Constraints for dumped tables

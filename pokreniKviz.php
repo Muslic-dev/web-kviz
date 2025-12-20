@@ -6,7 +6,8 @@ if (isset($_POST['score']) && isset($_POST['max'])) {
     $korisnik = $_SESSION['username'] ?? "Gost";
 
     try {
-        // Ažuriramo zadnji kviz koji je ovaj korisnik započeo
+        // Tražimo zadnji zapisani red za ovog korisnika koji još nema upisane bodove
+        // i mijenjamo 'Započeto' (kolona prezime) u stvarni rezultat
         $sql = "UPDATE rezultati 
                 SET prezime = ? 
                 WHERE ime = ? AND prezime = 'Započeto' 
@@ -15,7 +16,7 @@ if (isset($_POST['score']) && isset($_POST['max'])) {
         $stmt = $conn->prepare($sql);
         $stmt->execute([$rezultat_tekst, $korisnik]);
         
-        echo "Uspješno spremljeno";
+        echo "Uspješno spašeno";
     } catch (PDOException $e) {
         echo "Greška: " . $e->getMessage();
     }
