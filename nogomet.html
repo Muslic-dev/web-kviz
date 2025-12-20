@@ -1,127 +1,209 @@
+<?php
+require "includes/connection.php";
+
+// Provjera sesije
+if (!isset($_SESSION['username'])) {
+    header("Location: index.php");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="bs">
 <head>
     <meta charset="UTF-8">
-    <title>Sport | Kviz</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nogomet | Kvizomanija</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-
     <style>
-        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); margin: 0; padding: 0; user-select: none; }
-        .quiz-container { max-width: 600px; background: #fff; margin: 80px auto; padding: 40px; border-radius: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; }
-        h2 { margin-bottom: 20px; }
-        .intro p { font-size: 16px; margin-bottom: 10px; color: #555; }
-        .btn { background: #667eea; color: #fff; border: none; padding: 14px 35px; font-size: 16px; border-radius: 30px; cursor: pointer; margin-top: 20px; transition: background 0.3s; }
-        .btn:hover { background: #5a6fd5; }
-        .timer { font-size: 18px; font-weight: 700; color: #667eea; margin-bottom: 20px; }
-        .answers button { width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 10px; background: #f1f1f1; font-size: 16px; cursor: pointer; transition: 0.3s; }
-        .answers button.correct { background: #4CAF50 !important; color: #fff; }
-        .answers button.wrong { background: #e74c3c !important; color: #fff; }
-        .answers button:disabled { cursor: default; }
-        .result { font-size: 22px; font-weight: 700; color: #667eea; }
-        .result button { display: inline-block; background: #ff6b6b; color: #fff; border: none; padding: 12px 30px; font-size: 16px; border-radius: 25px; cursor: pointer; margin-top: 20px; transition: background 0.3s; }
-        .result button:hover { background: #e55a5a; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #11998e, #38ef7d); margin: 0; padding: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .quiz-container { max-width: 600px; width: 90%; background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.25); text-align: center; position: relative; overflow: hidden; }
+        
+        /* Stilovi za Start Ekran */
+        .icon-circle { width: 80px; height: 80px; background: #e8f5e9; color: #2e7d32; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 20px; }
+        .rules-list { list-style: none; padding: 0; margin: 25px 0; text-align: left; background: #f1f8e9; padding: 20px; border-radius: 12px; }
+        .rules-list li { margin-bottom: 12px; font-size: 15px; display: flex; align-items: center; color: #1b5e20; }
+        .rules-list li::before { content: '⚽'; margin-right: 10px; }
+        
+        .btn { background: #2e7d32; color: #fff; border: none; padding: 15px 40px; font-size: 18px; font-weight: 600; border-radius: 30px; cursor: pointer; margin-top: 10px; transition: 0.3s; width: 100%; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4); }
+        .btn:hover { background: #1b5e20; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(46, 125, 50, 0.6); }
+        
+        .timer { font-size: 18px; font-weight: 700; color: #2e7d32; margin-bottom: 20px; background: #e8f5e9; display: inline-block; padding: 8px 20px; border-radius: 20px; }
+        
+        .answers button { width: 100%; padding: 16px; margin: 8px 0; border: 2px solid #e8f5e9; border-radius: 12px; background: #fff; font-size: 16px; cursor: pointer; transition: 0.2s; font-weight: 500; color: #1b5e20; text-align: left; padding-left: 20px; }
+        .answers button:hover:not([disabled]) { border-color: #2e7d32; background: #f1f8e9; color: #1b5e20; }
+        
+        .correct { background: #4caf50 !important; color: #fff !important; border-color: #4caf50 !important; }
+        .wrong { background: #f44336 !important; color: #fff !important; border-color: #f44336 !important; }
+        
+        .warning-box { background: #fff5f5; color: #c53030; padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f56565; font-size: 0.85rem; text-align: left; }
+        h2 { color: #1a202c; margin-bottom: 10px; font-size: 1.8rem; }
+        p.desc { color: #718096; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
 <div class="quiz-container" id="quizBox">
     <div class="intro" id="startScreen">
-        <h2>⚽ Nogomet</h2>
-        <p>Da li ste spremni za sportski izazov?</p>
-        <p>📌 Kviz sadrži <strong>15 pitanja</strong></p>
-        <p>⏱ Za svako pitanje imate <strong>15 sekundi</strong></p>
-        <p>🚫 <strong>Zabranjeno:</strong> Refreshanje stranice poništava trenutno pitanje!</p>
-        <button class="btn" onclick="startQuiz()">Započni kviz</button>
+        <div class="icon-circle">⚽</div>
+        <h2>Nogometni Kviz</h2>
+        <p class="desc">Jesi li spreman za sportski izazov na terenu?</p>
+        
+        <ul class="rules-list">
+            <li><strong>15 pitanja</strong> o legendama i klubovima.</li>
+            <li><strong>15 sekundi</strong> za svaki šut (pitanje).</li>
+            <li>Brzina donosi bolju poziciju na tabeli!</li>
+        </ul>
+
+        <div class="warning-box">
+            ⚠️ <strong>Sudijska opomena:</strong><br>
+            Refresh stranice se kažnjava gubitkom poena na trenutnom pitanju!
+        </div>
+
+        <button class="btn" onclick="startQuiz()">Istrči na teren 🚀</button>
     </div>
 
     <div id="quizScreen" style="display:none;">
-        <div class="timer">⏱ Vrijeme: <span id="time">15</span>s</div>
-        <h2 id="question"></h2>
-        <div class="answers">
+        <div class="timer">⏱ <span id="time">15</span>s</div>
+        <h3 id="question" style="min-height: 60px; display: flex; align-items: center; justify-content: center;"></h3>
+        <div class="answers" id="answerBtns">
             <button onclick="checkAnswer(0)"></button>
             <button onclick="checkAnswer(1)"></button>
             <button onclick="checkAnswer(2)"></button>
+        </div>
+        <div style="margin-top: 20px; color: #a0aec0; font-size: 0.9rem;">
+            Pitanje <span id="qIndex">1</span> / <span id="qTotal">15</span>
         </div>
     </div>
 </div>
 
 <script>
+// --- TVOJA PITANJA ---
 const questions = [
-    { q: "Prvi golman Muje Hrnjice je..?", a: ["Mehić nije", "Fajković", "Sabljaković"], c: 0 },
+    { q: "Prvi golman Muje Hrnjice je?", a: ["Mehić", "Fajković", "Sabljaković"], c: 0 },
     { q: "Koja zemlja je osvojila Svjetsko prvenstvo 2018?", a: ["Francuska", "Hrvatska", "Brazil"], c: 0 },
     { q: "Koliko igrača ima u standardnom nogometnom timu?", a: ["10", "11", "12"], c: 1 },
     { q: "Koji klub ima nadimak 'Red Devils'?", a: ["Liverpool", "Manchester United", "Chelsea"], c: 1 },
-    { q: "Najviše Zlatnih lopti ima?", a: ["Messi", "Ronaldo", "Neymar"], c: 0 },
-    { q: "Koji stadion je domaći za Real Madrid?", a: ["Santiago Bernabeu", "Camp Nou", "Old Trafford"], c: 0 },
-    { q: "Koji igrač je poznat kao CR7?", a: ["Messi", "Ronaldo", "Neymar"], c: 1 },
-    { q: "Koja reprezentacija je 'Oranje'?", a: ["Nizozemska", "Njemačka", "Belgija"], c: 0 },
-    { q: "Koji tim je osvojio Ligu prvaka 2022?", a: ["Real Madrid", "Liverpool", "Chelsea"], c: 0 },
-    { q: "Najpoznatiji engleski derbi?", a: ["Manchester Derby", "North West Derby", "Merseyside Derby"], c: 2 },
-    { q: "Koji igrač nosi broj 10 u Barceloni?", a: ["Messi", "Xavi", "Iniesta"], c: 0 },
+    { q: "Koji igrač ima najviše osvojenih Zlatnih lopti (Ballon d'Or)?", a: ["Lionel Messi", "Cristiano Ronaldo", "Neymar"], c: 0 },
+    { q: "Koji stadion je domaći teren za Real Madrid?", a: ["Santiago Bernabeu", "Camp Nou", "Old Trafford"], c: 0 },
+    { q: "Koji igrač je širom svijeta poznat kao CR7?", a: ["Ronaldinho", "Cristiano Ronaldo", "Ronaldo Nazario"], c: 1 },
+    { q: "Koja reprezentacija nosi nadimak 'Oranje'?", a: ["Nizozemska", "Njemačka", "Belgija"], c: 0 },
+    { q: "Koji tim je osvojio Ligu prvaka 2022. godine?", a: ["Real Madrid", "Liverpool", "Chelsea"], c: 0 },
+    { q: "Koji je najpoznatiji derbi u Liverpoolu?", a: ["Manchester Derby", "North West Derby", "Merseyside Derby"], c: 2 },
+    { q: "Koji igrač je dugo godina nosio broj 10 u Barceloni?", a: ["Lionel Messi", "Xavi", "Iniesta"], c: 0 },
     { q: "Koja zemlja je domaćin EURO 2024?", a: ["Njemačka", "Francuska", "Italija"], c: 0 },
-    { q: "Koji je najpoznatiji nogometni klub u Italiji?", a: ["Juventus", "Inter", "Milan"], c: 0 },
-    { q: "Koji igrač je poznat po nadimku 'The Egyptian King'?", a: ["Salah", "Mane", "Hazard"], c: 0 },
-    { q: "Koja liga se smatra najboljom na svijetu?", a: ["Serie A", "La Liga", "Premier League"], c: 2 }
+    { q: "Koji klub iz Torina ima najviše titula u Italiji?", a: ["Juventus", "Inter", "Milan"], c: 0 },
+    { q: "Koji igrač ima nadimak 'The Egyptian King'?", a: ["Mohamed Salah", "Sadio Mane", "Eden Hazard"], c: 0 },
+    { q: "Koja liga se smatra najjačom na svijetu (Engleska)?", a: ["Serie A", "La Liga", "Premier League"], c: 2 }
 ];
 
 let index = 0, score = 0, time = 15, timer;
-const questionEl = document.getElementById("question"), buttons = document.querySelectorAll(".answers button"), timeEl = document.getElementById("time");
+let ukupnoSekundi = 0, stopwatch;
 
-// Blokiranje tastera za refresh
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) { e.preventDefault(); alert("Refresh je onemogućen!"); }
-});
+document.getElementById("qTotal").innerText = questions.length;
 
-function startQuiz() {
-    localStorage.setItem("quizActive", "true");
-    index = 0; score = 0; saveProgress();
+// --- ANTI-CHEAT ---
+window.onload = function() {
+    if (localStorage.getItem("sportKvizUToqu") === "da") {
+        index = parseInt(localStorage.getItem("sportKvizIndex")) || 0;
+        score = parseInt(localStorage.getItem("sportKvizScore")) || 0;
+        ukupnoSekundi = parseInt(localStorage.getItem("sportKvizVrijeme")) || 0;
+        alert("Pokušali ste osvježiti stranicu! Šut promašen (pitanje je netačno).");
+        index++; 
+        startQuiz(true);
+    }
+};
+
+function startQuiz(nastavak = false) {
+    localStorage.setItem("sportKvizUToqu", "da");
     document.getElementById("startScreen").style.display = "none";
     document.getElementById("quizScreen").style.display = "block";
+    
+    if (!stopwatch) {
+        stopwatch = setInterval(() => { 
+            ukupnoSekundi++; 
+            localStorage.setItem("sportKvizVrijeme", ukupnoSekundi); 
+        }, 1000);
+    }
     loadQuestion();
 }
 
 function loadQuestion() {
     if (index >= questions.length) { finishQuiz(); return; }
-    time = 15; timeEl.textContent = time;
-    questionEl.textContent = questions[index].q;
-    buttons.forEach((btn, i) => { btn.textContent = questions[index].a[i]; btn.className = ""; btn.disabled = false; });
-    saveProgress();
+    document.getElementById("qIndex").innerText = index + 1;
+
+    localStorage.setItem("sportKvizIndex", index);
+    localStorage.setItem("sportKvizScore", score);
+
+    time = 15;
+    document.getElementById("time").textContent = time;
+    document.getElementById("question").textContent = questions[index].q;
+    
+    const btns = document.querySelectorAll(".answers button");
+    btns.forEach((btn, i) => {
+        btn.textContent = questions[index].a[i];
+        btn.className = "";
+        btn.disabled = false;
+    });
+
     clearInterval(timer);
-    timer = setInterval(() => { time--; timeEl.textContent = time; if (time === 0) { index++; loadQuestion(); } }, 1000);
+    timer = setInterval(() => {
+        time--;
+        document.getElementById("time").textContent = time;
+        if (time <= 0) { clearInterval(timer); checkAnswer(-1); }
+    }, 1000);
 }
 
-function checkAnswer(answer) {
+function checkAnswer(ans) {
     clearInterval(timer);
-    buttons.forEach(btn => btn.disabled = true);
-    if (answer === questions[index].c) { buttons[answer].classList.add("correct"); score++; } 
-    else { buttons[answer].classList.add("wrong"); buttons[questions[index].c].classList.add("correct"); }
-    saveProgress();
-    setTimeout(() => { index++; loadQuestion(); }, 1200);
-}
+    const btns = document.querySelectorAll(".answers button");
+    btns.forEach(b => b.disabled = true);
 
-function saveProgress() {
-    localStorage.setItem("quizIndex", index);
-    localStorage.setItem("quizScore", score);
+    if (ans === questions[index].c) {
+        btns[ans].classList.add("correct");
+        score++;
+    } else if (ans !== -1) {
+        btns[ans].classList.add("wrong");
+        btns[questions[index].c].classList.add("correct");
+    } else {
+        btns[questions[index].c].classList.add("correct");
+    }
+
+    setTimeout(() => {
+        index++;
+        loadQuestion();
+    }, 1200);
 }
 
 function finishQuiz() {
-    localStorage.removeItem("quizActive");
-    localStorage.removeItem("quizIndex");
-    localStorage.removeItem("quizScore");
+    clearInterval(stopwatch);
+    clearInterval(timer);
+    
+    localStorage.removeItem("sportKvizUToqu");
+    localStorage.removeItem("sportKvizIndex");
+    localStorage.removeItem("sportKvizScore");
+    localStorage.removeItem("sportKvizVrijeme");
 
-    // SLANJE REZULTATA U BAZU
+    // SLANJE U BAZU
+    const formData = new FormData();
+    formData.append('score', score);
+    formData.append('max', questions.length);
+    formData.append('sekunde', ukupnoSekundi);
+
     fetch('pokreniKviz.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'score=' + score + '&max=' + questions.length
-    });
+        body: new URLSearchParams(formData)
+    })
+    .then(response => response.text())
+    .then(data => console.log("Rezultat spremljen!"));
 
     document.getElementById("quizBox").innerHTML = `
         <div class="result">
-            🎉 Kviz završen!<br><br>
-            Tačnih odgovora: ${score} / ${questions.length}<br><br>
-            <button onclick="window.location.href='index2.php'">Nazad na izbor</button>
+            <div style="font-size: 60px; margin-bottom: 10px;">🏆</div>
+            <h2 style="color: #2e7d32;">Kraj utakmice!</h2>
+            <div style="background: #f1f8e9; padding: 20px; border-radius: 15px; margin: 20px 0;">
+                <p style="font-size: 1.2rem;">Postignuti golovi: <strong style="color: #48bb78;">${score} / ${questions.length}</strong></p>
+                <p style="font-size: 1.1rem;">Vrijeme: <strong style="color: #2e7d32;">${ukupnoSekundi}s</strong></p>
+            </div>
+            <a href="index2.php" class="btn">Nazad na tabelu</a>
         </div>`;
 }
 </script>

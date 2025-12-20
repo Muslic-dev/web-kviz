@@ -1,5 +1,4 @@
 <?php
-// U connection.php obavezno mora biti session_start();
 require "includes/connection.php"; 
 
 if (isset($_GET['kviz_id'])) {
@@ -7,12 +6,13 @@ if (isset($_GET['kviz_id'])) {
     $korisnicko_ime = $_SESSION['username'] ?? "Gost";
 
     try {
-        // Upisujemo početni status
-        $sql = "INSERT INTO rezultati (kviz_id, ime, prezime, razred_odjeljenje) VALUES (?, ?, 'Započeto', 'Učenik')";
+        // Kreiramo početni red. Kolona 'prezime' služi kao status/rezultat.
+        $sql = "INSERT INTO rezultati (kviz_id, ime, prezime, razred_odjeljenje, sekunde) 
+                VALUES (?, ?, 'Započeto', 'Učen', 0)";
         $stmt = $conn->prepare($sql);
         $stmt->execute([$kviz_id, $korisnicko_ime]);
 
-        // Preusmjeravanje na fajlove - pazi na velika/mala slova!
+        // Preusmjeravanje na HTML fajlove kvizova
         if ($kviz_id == 1) {
             header("Location: opceZnanje.html");
         } elseif ($kviz_id == 2) {

@@ -191,7 +191,7 @@ if(isset($_POST['userLogin'])) {
 
                         <form method="POST" action="">
                             <div class="input-group">
-                                <label>Korisničko ime / Email</label>
+                                <label>Korisničko ime</label>
                                 <input type="text" name="adm-email" placeholder="Unesite podatke" required>
                             </div>
                             <div class="input-group">

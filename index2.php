@@ -1,8 +1,15 @@
 <?php
-require "includes/connection.php";
-if (!isset($_SESSION['username'])) { header("Location: index.php"); exit(); }
+// 1. Putanja do konekcije
+require "includes/connection.php"; 
+
+// Provjera sesije
+if (!isset($_SESSION['username'])) { 
+    header("Location: index.php"); 
+    exit(); 
+}
 $korisnik = $_SESSION['username'];
 
+// Funkcija za status (ostaje ista)
 function dohvatiStatus($conn, $kviz_id, $korisnik) {
     $stmt = $conn->prepare("SELECT prezime FROM rezultati WHERE ime = ? AND kviz_id = ? ORDER BY rezultat_id DESC LIMIT 1");
     $stmt->execute([$korisnik, $kviz_id]);
@@ -12,6 +19,7 @@ function dohvatiStatus($conn, $kviz_id, $korisnik) {
     return "<span style='color:#27ae60;'>Rezultat: " . htmlspecialchars($rez['prezime']) . "</span>";
 }
 
+// Funkcija za Top 3
 function dohvatiTopRezultate($conn, $kviz_id) {
     $stmt = $conn->prepare("
         SELECT ime, prezime, sekunde 
@@ -23,8 +31,12 @@ function dohvatiTopRezultate($conn, $kviz_id) {
         LIMIT 3
     ");
     $stmt->execute([$kviz_id]);
-    return $stmt->fetchAll();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+// Dohvaćamo sve kvizove iz baze za prikaz
+$stmt_kvizovi = $conn->query("SELECT * FROM kvizovi");
+$svi_kvizovi_iz_baze = $stmt_kvizovi->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="bs">
@@ -32,12 +44,11 @@ function dohvatiTopRezultate($conn, $kviz_id) {
     <meta charset="UTF-8">
     <title>Kvizomanija | Izbor kviza</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="style2.css">
     <style>
-        /* Dodatni stilovi */
+        /* Tvoji stilovi ostaju identični */
         .header-actions { display: flex; align-items: center; }
         .user-info { font-weight: bold; color: #2563eb; margin-right: 15px; }
         .logout-btn { 
@@ -46,10 +57,7 @@ function dohvatiTopRezultate($conn, $kviz_id) {
             transition: 0.3s; display: flex; align-items: center; gap: 5px;
         }
         .logout-btn:hover { background: #dc2626; color: white; }
-        
         .status-info { font-size: 0.85rem; margin-top: 10px; font-weight: 600; display: block; border-top: 1px solid #eee; padding-top: 8px; }
-        
-        /* Statistika stilovi */
         .stats-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
         .stat-card { 
             background: #f8fafc; border-radius: 12px; padding: 15px; 
@@ -64,7 +72,12 @@ function dohvatiTopRezultate($conn, $kviz_id) {
         }
         .rank { font-weight: bold; color: #667eea; margin-right: 8px; }
         .score { font-weight: 700; color: #27ae60; display: block; }
-        .time-label { font-size: 0.75rem; color: #64748b; }
+        .time-label { 
+            font-size: 0.8rem; 
+            color: #64748b; 
+            margin-left: 5px;
+            font-weight: normal;
+        }
         .no-data { color: #94a3b8; font-style: italic; font-size: 0.9rem; }
     </style>
 </head>
@@ -75,7 +88,7 @@ function dohvatiTopRezultate($conn, $kviz_id) {
         <h1 class="logo">Kvizomanija</h1>
         <div class="header-actions">
             <div class="user-info">Ulogovan: <?= htmlspecialchars($korisnik) ?> 👋</div>
-            <a href="logout.php" class="logout-btn">
+            <a href="index.php" class="logout-btn">
                 <i class="bi bi-box-arrow-right"></i> Odjavi se
             </a>
         </div>
@@ -85,42 +98,46 @@ function dohvatiTopRezultate($conn, $kviz_id) {
 <main>
     <div class="container">
         <section class="quiz-grid">
-            <div class="quiz-card">
-                <div class="quiz-icon general-icon"><img src="slike/einstein.png" alt="Opće"></div>
-                <h3>Opće znanje</h3>
-                <p>Pitanja iz geografije, historije i kulture.</p>
-                <a href="brojacKvizova.php?kviz_id=1">Započni kviz</a>
-                <span class="status-info"><?= dohvatiStatus($conn, 1, $korisnik) ?></span>
-            </div>
+            <?php foreach ($svi_kvizovi_iz_baze as $k): 
+                // Određivanje ikonice i naslova
+                $id = $k['kviz_id'];
+                $slika = "slike/default.png"; // Rezervna slika
+                $klasa = "";
+                $opis = "Testiraj svoje znanje u ovoj kategoriji.";
 
-            <div class="quiz-card">
-                <div class="quiz-icon tech-icon"><img src="slike/technology.png" alt="IT"></div>
-                <h3>IT & Tehnologija</h3>
-                <p>Računari, internet i osnove programiranja.</p>
-                <a href="brojacKvizova.php?kviz_id=2">Započni kviz</a>
-                <span class="status-info"><?= dohvatiStatus($conn, 2, $korisnik) ?></span>
-            </div>
-
-            <div class="quiz-card">
-                <div class="quiz-icon"><img src="slike/footbal.jpg" alt="Sport"></div>
-                <h3>Sport</h3>
-                <p>Sportisti, klubovi i velika takmičenja.</p>
-                <a href="brojacKvizova.php?kviz_id=3">Započni kviz</a>
-                <span class="status-info"><?= dohvatiStatus($conn, 3, $korisnik) ?></span>
-            </div>
+                if ($id == 1) {
+                    $slika = "slike/einstein.png";
+                    $klasa = "general-icon";
+                    $opis = "Pitanja iz geografije, historije i kulture.";
+                } elseif ($id == 2) {
+                    $slika = "slike/technology.png";
+                    $klasa = "tech-icon";
+                    $opis = "Računari, internet i osnove programiranja.";
+                } elseif ($id == 3) {
+                    $slika = "slike/footbal.jpg";
+                    $klasa = "";
+                    $opis = "Sportisti, klubovi i velika takmičenja.";
+                }
+            ?>
+                <div class="quiz-card">
+                    <div class="quiz-icon <?= $klasa ?>"><img src="<?= $slika ?>" alt="Kviz"></div>
+                    <h3><?= htmlspecialchars($k['naziv_kviza']) ?></h3>
+                    <p><?= $opis ?></p>
+                    <a href="brojacKvizova.php?kviz_id=<?= $id ?>">Započni kviz</a>
+                    <span class="status-info"><?= dohvatiStatus($conn, $id, $korisnik) ?></span>
+                </div>
+            <?php endforeach; ?>
         </section>
 
         <section class="extra-section">
             <h3>🏆 Top 3 Rezultata po Kvizovima</h3>
             <div class="stats-container">
-                
-                <?php 
-                $naslovi = [1 => "Opće znanje", 2 => "IT & Tehnologija", 3 => "Sport"];
-                foreach ($naslovi as $id => $naslov): 
+                <?php foreach ($svi_kvizovi_iz_baze as $k): 
+                    $id = $k['kviz_id'];
                     $top = dohvatiTopRezultate($conn, $id);
                 ?>
                 <div class="stat-card">
-                    <h4><?= $naslov ?></h4>
+                    <h4><?= htmlspecialchars($k['naziv_kviza']) ?></h4>
                     <ul class="leaderboard-list">
                         <?php if (count($top) > 0): ?>
                             <?php foreach ($top as $i => $r): ?>
@@ -131,7 +148,10 @@ function dohvatiTopRezultate($conn, $kviz_id) {
                                 </span>
                                 <div style="text-align: right;">
                                     <span class="score"><?= htmlspecialchars($r['prezime']) ?></span>
-                                    <span class="time-label"><i class="bi bi-clock"></i> <?= htmlspecialchars($r['sekunde']) ?>s</span>
+                                    <br>
+                                    <span class="time-label">
+                                        <i class="bi bi-clock"></i> <?= (int)$r['sekunde'] ?>s
+                                    </span>
                                 </div>
                             </li>
                             <?php endforeach; ?>
@@ -141,7 +161,6 @@ function dohvatiTopRezultate($conn, $kviz_id) {
                     </ul>
                 </div>
                 <?php endforeach; ?>
-
             </div>
         </section>
     </div>
