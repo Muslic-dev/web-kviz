@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 21, 2025 at 12:03 AM
+-- Generation Time: Dec 22, 2025 at 11:54 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -61,7 +61,8 @@ CREATE TABLE `korisnici` (
 
 INSERT INTO `korisnici` (`korisnik_id`, `korisnicko_ime`, `email`, `sifra`, `razred`, `datum_registracije`) VALUES
 (1, 'emel', 'emel@kviz.ba', '$2y$10$ih1UkH6ZT72KKTOZwR0pWuJXd7UPSfMSzB3aj5X40lGDqy3KO3SlC', 'IV', '2025-12-19 21:16:04'),
-(3, 'murat', 'murat@kviz.ba', '$2y$10$7qC.uY1TJ0K6pWJHbuvSgeKo7gGcd8HxjXtS8g5s3ZF/Af1Uv8gJ.', 'I', '2025-12-19 22:33:08');
+(3, 'murat', 'murat@kviz.ba', '$2y$10$7qC.uY1TJ0K6pWJHbuvSgeKo7gGcd8HxjXtS8g5s3ZF/Af1Uv8gJ.', 'I', '2025-12-19 22:33:08'),
+(6, 'haris', 'haris@kviz.ba', '$2y$10$OgFnabSjsaVmyph8YKpESutJ6cxHSGkoOx.YOBhfb84W5Iay5yiua', 'I', '2025-12-21 20:22:38');
 
 -- --------------------------------------------------------
 
@@ -72,6 +73,7 @@ INSERT INTO `korisnici` (`korisnik_id`, `korisnicko_ime`, `email`, `sifra`, `raz
 CREATE TABLE `kvizovi` (
   `kviz_id` int(11) NOT NULL,
   `naziv_kviza` varchar(100) DEFAULT NULL,
+  `slika` varchar(255) DEFAULT 'default.jpg',
   `admin_id` int(11) DEFAULT NULL,
   `pocetak` datetime DEFAULT NULL,
   `rok_predaje` datetime DEFAULT NULL,
@@ -83,10 +85,12 @@ CREATE TABLE `kvizovi` (
 -- Dumping data for table `kvizovi`
 --
 
-INSERT INTO `kvizovi` (`kviz_id`, `naziv_kviza`, `admin_id`, `pocetak`, `rok_predaje`, `vremensko_ogranicenje`, `broj_pitanja`) VALUES
-(1, 'Opće znanje', 1, NULL, NULL, 15, 15),
-(2, 'IT & Tehnologija', 1, NULL, NULL, 15, 15),
-(3, 'Sport', 1, NULL, NULL, 15, 15);
+INSERT INTO `kvizovi` (`kviz_id`, `naziv_kviza`, `slika`, `admin_id`, `pocetak`, `rok_predaje`, `vremensko_ogranicenje`, `broj_pitanja`) VALUES
+(1, 'Opće znanje', 'default.jpg', 1, NULL, NULL, 15, 15),
+(2, 'IT & Tehnologija', 'default.jpg', 1, NULL, NULL, 15, 15),
+(3, 'Sport', 'default.jpg', 1, NULL, NULL, 15, 15),
+(9, 'Geografija', 'slika_1766441088_6949c080aa565.jpg', NULL, NULL, NULL, 15, 2),
+(10, 'Geografija', 'slika_1766442400_6949c5a01bafd.jpg', NULL, NULL, NULL, 15, 3);
 
 -- --------------------------------------------------------
 
@@ -117,6 +121,14 @@ CREATE TABLE `pitanja` (
   `tacan_odgovor` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `pitanja`
+--
+
+INSERT INTO `pitanja` (`pitanje_id`, `kviz_id`, `tekst_pitanja`, `opcija_a`, `opcija_b`, `opcija_c`, `tacan_odgovor`) VALUES
+(13, 9, 'eef', 'as', 'asd', 'asd', 'as'),
+(14, 9, 'asd', 'asd', 'asd', 'a', 'a');
+
 -- --------------------------------------------------------
 
 --
@@ -139,38 +151,7 @@ CREATE TABLE `rezultati` (
 --
 
 INSERT INTO `rezultati` (`rezultat_id`, `kviz_id`, `ime`, `prezime`, `razred_odjeljenje`, `odgovori`, `vrijeme_zapoceto`, `sekunde`) VALUES
-(4, 1, 'emel', 'Započeto', 'Učen', NULL, '2025-12-19 22:13:25', 0),
-(5, 1, 'emel', 'Započeto', 'Učen', NULL, '2025-12-19 22:13:25', 0),
-(6, 1, 'haris', 'Započeto', 'Učen', NULL, '2025-12-19 22:16:32', 0),
-(7, 1, 'emel', 'Započeto', 'Učen', NULL, '2025-12-19 22:42:56', 0),
-(8, 1, 'emel', '6 / 15', 'Učen', NULL, '2025-12-19 22:57:25', 0),
-(9, 2, 'emel', '6 / 15', 'Učen', NULL, '2025-12-19 23:00:21', 0),
-(10, 3, 'emel', '3 / 15', 'Učen', NULL, '2025-12-19 23:01:07', 0),
-(11, 1, 'murat', '10 / 15', 'Učen', NULL, '2025-12-20 13:43:19', 0),
-(12, 2, 'murat', '2 / 15', 'Učen', NULL, '2025-12-20 13:47:46', 0),
-(13, 2, 'murat', '6 / 15', 'Učen', NULL, '2025-12-20 14:16:15', 0),
-(14, 2, 'murat', '8 / 15', 'Učen', NULL, '2025-12-20 14:19:16', 0),
-(15, 2, 'murat', '6 / 15', 'Učen', NULL, '2025-12-20 14:19:54', 0),
-(16, 2, 'murat', '6 / 15', 'Učen', NULL, '2025-12-20 14:22:20', 0),
-(17, 2, 'murat', 'Započeto', 'Učen', NULL, '2025-12-20 14:27:35', 0),
-(18, 2, 'murat', 'Započeto', 'Učen', NULL, '2025-12-20 14:28:09', 0),
-(19, 2, 'murat', '6 / 15', 'Učen', NULL, '2025-12-20 14:29:30', 0),
-(20, 2, 'murat', '5 / 15', 'Učen', NULL, '2025-12-20 14:31:12', 0),
-(21, 2, 'murat', 'Započeto', 'Učen', NULL, '2025-12-20 14:33:08', 0),
-(22, 2, 'murat', '0 / 3', 'Učen', NULL, '2025-12-20 14:34:17', 0),
-(23, 2, 'murat', 'Započeto', 'Učen', NULL, '2025-12-20 14:34:26', 0),
-(24, 2, 'emel', '2 / 5', 'Učen', NULL, '2025-12-20 21:59:04', 6),
-(25, 2, 'emel', '3 / 5', 'Učen', NULL, '2025-12-20 21:59:16', 8),
-(26, 2, 'emel', '3 / 5', 'Učen', NULL, '2025-12-20 21:59:54', 10),
-(27, 2, 'emel', '3 / 5', 'Učen', NULL, '2025-12-20 22:00:28', 12),
-(28, 2, 'emel', '0 / 5', 'Učen', NULL, '2025-12-20 22:06:11', 4),
-(29, 2, 'emel', '2 / 5', 'Učen', NULL, '2025-12-20 22:07:11', 6),
-(30, 2, 'emel', '3 / 5', 'Učen', NULL, '2025-12-20 22:09:00', 9),
-(31, 2, 'ilija', '3 / 5', 'Učen', NULL, '2025-12-20 22:14:52', 8),
-(32, 2, 'ilija', '9 / 15', 'Učen', NULL, '2025-12-20 22:17:08', 40),
-(33, 1, 'ilija', '9 / 15', 'Učen', NULL, '2025-12-20 22:20:14', 41),
-(34, 3, 'ilija', '7 / 15', 'Učen', NULL, '2025-12-20 22:22:13', 28),
-(35, 2, 'ilija', '5 / 15', 'Učen', NULL, '2025-12-20 22:39:15', 26);
+(38, 9, 'emel', 'Započeto', 'Učen', NULL, '2025-12-22 22:22:46', 0);
 
 --
 -- Indexes for dumped tables
@@ -232,13 +213,13 @@ ALTER TABLE `admini`
 -- AUTO_INCREMENT for table `korisnici`
 --
 ALTER TABLE `korisnici`
-  MODIFY `korisnik_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `korisnik_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `kvizovi`
 --
 ALTER TABLE `kvizovi`
-  MODIFY `kviz_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `kviz_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `odgovori`
@@ -250,13 +231,13 @@ ALTER TABLE `odgovori`
 -- AUTO_INCREMENT for table `pitanja`
 --
 ALTER TABLE `pitanja`
-  MODIFY `pitanje_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `pitanje_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `rezultati`
 --
 ALTER TABLE `rezultati`
-  MODIFY `rezultat_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `rezultat_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- Constraints for dumped tables

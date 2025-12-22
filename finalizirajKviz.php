@@ -22,5 +22,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         ]);
     }
 
-    echo "<script>alert('Kviz je uspješno kreiran!'); window.location.href='index2.php';</script>";
+    echo "<script>alert('Kviz je uspješno kreiran!'); window.location.href='admin.php';</script>";
 }

@@ -1,15 +1,12 @@
 <?php
-// 1. Putanja do konekcije
 require "includes/connection.php"; 
 
-// Provjera sesije
 if (!isset($_SESSION['username'])) { 
     header("Location: index.php"); 
     exit(); 
 }
 $korisnik = $_SESSION['username'];
 
-// Funkcija za status (ostaje ista)
 function dohvatiStatus($conn, $kviz_id, $korisnik) {
     $stmt = $conn->prepare("SELECT prezime FROM rezultati WHERE ime = ? AND kviz_id = ? ORDER BY rezultat_id DESC LIMIT 1");
     $stmt->execute([$korisnik, $kviz_id]);
@@ -19,7 +16,6 @@ function dohvatiStatus($conn, $kviz_id, $korisnik) {
     return "<span style='color:#27ae60;'>Rezultat: " . htmlspecialchars($rez['prezime']) . "</span>";
 }
 
-// Funkcija za Top 3
 function dohvatiTopRezultate($conn, $kviz_id) {
     $stmt = $conn->prepare("
         SELECT ime, prezime, sekunde 
@@ -34,7 +30,6 @@ function dohvatiTopRezultate($conn, $kviz_id) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// Dohvaćamo sve kvizove iz baze za prikaz
 $stmt_kvizovi = $conn->query("SELECT * FROM kvizovi");
 $svi_kvizovi_iz_baze = $stmt_kvizovi->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -48,7 +43,6 @@ $svi_kvizovi_iz_baze = $stmt_kvizovi->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="style2.css">
     <style>
-        /* Tvoji stilovi ostaju identični */
         .header-actions { display: flex; align-items: center; }
         .user-info { font-weight: bold; color: #2563eb; margin-right: 15px; }
         .logout-btn { 
@@ -57,11 +51,57 @@ $svi_kvizovi_iz_baze = $stmt_kvizovi->fetchAll(PDO::FETCH_ASSOC);
             transition: 0.3s; display: flex; align-items: center; gap: 5px;
         }
         .logout-btn:hover { background: #dc2626; color: white; }
-        .status-info { font-size: 0.85rem; margin-top: 10px; font-weight: 600; display: block; border-top: 1px solid #eee; padding-top: 8px; }
+
+        /* POPRAVLJENI KONTEJNER ZA SLIKE */
+        .quiz-icon {
+            width: 100%;
+            height: 140px;      /* Optimalna visina */
+            margin: 0 0 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: transparent; /* Uklonjena pozadina da se bolje uklopi */
+        }
+
+        .quiz-icon img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* KLJUČNO: Cijela slika će se vidjeti bez odsijecanja */
+            transition: transform 0.3s ease;
+        }
+
+        /* GRID SA TAČNO 3 STAVKE */
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        @media (max-width: 992px) { .quiz-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .quiz-grid { grid-template-columns: 1fr; } }
+
+        .quiz-card {
+            text-align: center;
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .quiz-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .quiz-card:hover img { transform: scale(1.05); }
+
+        .status-info { font-size: 0.85rem; margin-top: 10px; font-weight: 600; display: block; border-top: 1px solid #eee; padding-top: 10px; }
+        
         .stats-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
         .stat-card { 
             background: #f8fafc; border-radius: 12px; padding: 15px; 
-            min-width: 250px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+            min-width: 280px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
             border: 1px solid #e2e8f0; flex: 1;
         }
         .stat-card h4 { margin-top: 0; color: #1e293b; border-bottom: 2px solid #667eea; padding-bottom: 5px; font-size: 1.1rem; }
@@ -72,12 +112,7 @@ $svi_kvizovi_iz_baze = $stmt_kvizovi->fetchAll(PDO::FETCH_ASSOC);
         }
         .rank { font-weight: bold; color: #667eea; margin-right: 8px; }
         .score { font-weight: 700; color: #27ae60; display: block; }
-        .time-label { 
-            font-size: 0.8rem; 
-            color: #64748b; 
-            margin-left: 5px;
-            font-weight: normal;
-        }
+        .time-label { font-size: 0.8rem; color: #64748b; margin-left: 5px; font-weight: normal; }
         .no-data { color: #94a3b8; font-style: italic; font-size: 0.9rem; }
     </style>
 </head>
@@ -99,38 +134,40 @@ $svi_kvizovi_iz_baze = $stmt_kvizovi->fetchAll(PDO::FETCH_ASSOC);
     <div class="container">
         <section class="quiz-grid">
             <?php foreach ($svi_kvizovi_iz_baze as $k): 
-                // Određivanje ikonice i naslova
                 $id = $k['kviz_id'];
-                $slika = "slike/default.png"; // Rezervna slika
-                $klasa = "";
-                $opis = "Testiraj svoje znanje u ovoj kategoriji.";
-
-                if ($id == 1) {
-                    $slika = "slike/einstein.png";
-                    $klasa = "general-icon";
-                    $opis = "Pitanja iz geografije, historije i kulture.";
-                } elseif ($id == 2) {
-                    $slika = "slike/technology.png";
-                    $klasa = "tech-icon";
-                    $opis = "Računari, internet i osnove programiranja.";
-                } elseif ($id == 3) {
-                    $slika = "slike/footbal.jpg";
-                    $klasa = "";
-                    $opis = "Sportisti, klubovi i velika takmičenja.";
+                
+                if (!empty($k['slika']) && file_exists("uploads/" . $k['slika'])) {
+                    $slika_putanja = "uploads/" . $k['slika'];
+                } else {
+                    if ($id == 1) $slika_putanja = "slike/einstein.png";
+                    elseif ($id == 2) $slika_putanja = "slike/technology.png";
+                    elseif ($id == 3) $slika_putanja = "slike/footbal.jpg";
+                    else $slika_putanja = "slike/default.png";
                 }
+
+                $opis = "Testiraj svoje znanje u ovoj kategoriji.";
+                if ($id == 1) $opis = "Pitanja iz geografije, historije i kulture.";
+                elseif ($id == 2) $opis = "Računari, internet i osnove programiranja.";
+                elseif ($id == 3) $opis = "Sportisti, klubovi i velika takmičenja.";
             ?>
                 <div class="quiz-card">
-                    <div class="quiz-icon <?= $klasa ?>"><img src="<?= $slika ?>" alt="Kviz"></div>
-                    <h3><?= htmlspecialchars($k['naziv_kviza']) ?></h3>
-                    <p><?= $opis ?></p>
-                    <a href="brojacKvizova.php?kviz_id=<?= $id ?>">Započni kviz</a>
-                    <span class="status-info"><?= dohvatiStatus($conn, $id, $korisnik) ?></span>
+                    <div>
+                        <div class="quiz-icon">
+                            <img src="<?= $slika_putanja ?>" alt="Kviz">
+                        </div>
+                        <h3 style="margin-bottom: 10px; color: #1e293b;"><?= htmlspecialchars($k['naziv_kviza']) ?></h3>
+                        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px; line-height: 1.4;"><?= $opis ?></p>
+                    </div>
+                    <div>
+                        <a href="brojacKvizova.php?kviz_id=<?= $id ?>" class="play-btn" style="text-decoration: none; background: #667eea; color: white; padding: 12px 25px; border-radius: 10px; display: inline-block; width: 100%; box-sizing: border-box; font-weight: 600; transition: 0.3s;">Započni kviz</a>
+                        <span class="status-info"><?= dohvatiStatus($conn, $id, $korisnik) ?></span>
+                    </div>
                 </div>
             <?php endforeach; ?>
         </section>
 
         <section class="extra-section">
-            <h3>🏆 Top 3 Rezultata po Kvizovima</h3>
+            <h3 style="margin-top: 40px; text-align: center; color: #1e293b;">🏆 Top 3 Rezultata po Kvizovima</h3>
             <div class="stats-container">
                 <?php foreach ($svi_kvizovi_iz_baze as $k): 
                     $id = $k['kviz_id'];
@@ -148,10 +185,7 @@ $svi_kvizovi_iz_baze = $stmt_kvizovi->fetchAll(PDO::FETCH_ASSOC);
                                 </span>
                                 <div style="text-align: right;">
                                     <span class="score"><?= htmlspecialchars($r['prezime']) ?></span>
-                                    <br>
-                                    <span class="time-label">
-                                        <i class="bi bi-clock"></i> <?= (int)$r['sekunde'] ?>s
-                                    </span>
+                                    <span class="time-label"><i class="bi bi-clock"></i> <?= (int)$r['sekunde'] ?>s</span>
                                 </div>
                             </li>
                             <?php endforeach; ?>

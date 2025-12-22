@@ -25,14 +25,25 @@ if (isset($_POST['delete_id'])) {
 if (isset($_POST['delete_quiz_id'])) {
     $quiz_id = $_POST['delete_quiz_id'];
     try {
-        // Brišemo kviz 
-        // Napomena: Da bi ovo radilo bez greške, u bazi moraju biti podešeni ON DELETE CASCADE ključevi
         $stmt = $conn->prepare("DELETE FROM kvizovi WHERE kviz_id = ?");
         $stmt->execute([$quiz_id]);
         header("Location: admin.php?poruka=kviz_obrisan");
         exit();
     } catch (PDOException $e) {
         $greska_brisanje = "Greška pri brisanju kviza: " . $e->getMessage();
+    }
+}
+
+// --- NOVO: LOGIKA ZA BRISANJE POJEDINAČNE AKTIVNOSTI ---
+if (isset($_POST['delete_activity_id'])) {
+    $activity_id = $_POST['delete_activity_id'];
+    try {
+        $stmt = $conn->prepare("DELETE FROM rezultati WHERE rezultat_id = ?");
+        $stmt->execute([$activity_id]);
+        header("Location: admin.php?poruka=aktivnost_obrisana");
+        exit();
+    } catch (PDOException $e) {
+        $greska_brisanje = "Greška pri brisanju aktivnosti: " . $e->getMessage();
     }
 }
 
@@ -96,7 +107,7 @@ try {
         <li><a href="#tabela-korisnika" class="nav-link"><i class="fa fa-users me-2"></i> Korisnici</a></li>
     </ul>
     <hr>
-    <a href="logout.php" class="btn btn-danger w-100"><i class="fa fa-sign-out-alt"></i> Odjavi se</a>
+    <a href="index.php" class="btn btn-danger w-100"><i class="fa fa-sign-out-alt"></i> Odjavi se</a>
 </div>
 
 <div id="content">
@@ -114,6 +125,8 @@ try {
             <div class="alert alert-success alert-dismissible fade show">Korisnik obrisan!<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
         <?php elseif($_GET['poruka'] == 'kviz_obrisan'): ?>
             <div class="alert alert-warning alert-dismissible fade show">Kviz je uspješno uklonjen.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        <?php elseif($_GET['poruka'] == 'aktivnost_obrisana'): ?>
+            <div class="alert alert-info alert-dismissible fade show">Aktivnost uspješno izbrisana.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
         <?php endif; ?>
     <?php endif; ?>
     
@@ -166,7 +179,7 @@ try {
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Korisnik</th><th>Kviz ID</th><th>Status / Rezultat</th><th>Vrijeme rada</th><th>Vrijeme započeto</th>
+                            <th>Korisnik</th><th>Kviz ID</th><th>Status / Rezultat</th><th>Vrijeme rada</th><th>Vrijeme započeto</th><th class="text-center">Akcija</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -184,6 +197,12 @@ try {
                                 </td>
                                 <td class="fw-bold"><?= ($a['prezime'] == 'Započeto') ? '---' : $a['sekunde'] . 's' ?></td>
                                 <td class="small text-muted"><?= date('H:i:s d.m.Y', strtotime($a['vrijeme_zapoceto'])) ?></td>
+                                <td class="text-center">
+                                    <form method="POST" onsubmit="return confirm('Obrisati ovaj zapis aktivnosti?');" style="display:inline;">
+                                        <input type="hidden" name="delete_activity_id" value="<?= $a['rezultat_id'] ?>">
+                                        <button type="submit" class="btn btn-sm text-danger border-0 bg-transparent px-2"><i class="fa fa-times-circle fa-lg"></i></button>
+                                    </form>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
