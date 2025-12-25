@@ -10,6 +10,7 @@ body {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: #333;
     line-height: 1.6;
+    background-attachment: fixed;
 }
 
 .container {
@@ -63,7 +64,7 @@ main { padding: 60px 0; }
     perspective: 1000px; /* Ovo je ključno za 3D efekat */
     width: 100%;
     max-width: 400px;
-    height: 480px; /* Fiksna visina da se ne mijenja tokom okretanja */
+    height: 400px; /* Fiksna visina da se ne mijenja tokom okretanja */
 }
 
 /* Unutrašnji kontejner koji se zapravo okreće */
@@ -119,4 +120,4 @@ main { padding: 60px 0; }
 
 
 /* Footer */
-footer { background: #333; color: #fff; text-align: center; padding: 20px 0; margin-top: 40px; }
+footer { background: #333; color: #fff; text-align: center; padding: 20px 0; margin-top: 40px; position: fixed; bottom: 0; width: 100%; }

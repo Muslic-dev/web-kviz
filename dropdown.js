@@ -1,7 +1,7 @@
 const selected = document.querySelector(".selected");
 const optionsContainer = document.querySelector(".options-container");
 const optionsList = document.querySelectorAll(".option");
-const arrow = document.querySelector("#arrow");
+const arrow = document.querySelector("#arrow-razred");
 let isArrowClicked = false;
 
 selected.onfocus = ()=> 

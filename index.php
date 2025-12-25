@@ -1,80 +1,95 @@
 <?php 
 require "includes/connection.php";
-// session_start(); 
 
 $error = "";
+if(isset($_SESSION['error']))
+{
+    $error = $_SESSION['error'];
+    unset($_SESSION['error']);
+}
+$success = "";
+
+if(isset($_SESSION['success']))
+{
+    $success = $_SESSION['success'];
+    unset($_SESSION['success']);
+}
 
 // --- LOGIKA ZA PRIJAVU (ZADNJA STRANA) ---
-if(isset($_POST['adminLogin'])) {
-    $identity = $_POST['adm-email']; 
-    $password = $_POST['adm-password'];
+if(isset($_POST['login'])) 
+{
+    $email = $_POST['login-email']; 
+    $password = $_POST['login-password'];
 
-    if(empty($identity) || empty($password)) {
+    if(empty($email) || empty($password)) {
         $error = "Unesite sve podatke";
     } else {
-        $qAdmin = $conn->prepare("SELECT * FROM admini WHERE email = :email LIMIT 1");
-        $qAdmin->execute([':email' => $identity]);
-        $admin = $qAdmin->fetch(PDO::FETCH_ASSOC);
+        $qLogin = $conn->prepare("SELECT * FROM nalozi WHERE email = :email LIMIT 1");
+        $qLogin->execute([':email' => $email]);
+        $account = $qLogin->fetch(PDO::FETCH_ASSOC);
 
-        if($admin) {
-            if(password_verify($password, $admin['sifra']) || $password == $admin['sifra']) {
+        if($account) {
+            if(password_verify($password, $account['sifra'])) {
                 $_SESSION['logged'] = "yes";
-                $_SESSION['id'] = $admin['admin_id'];
-                header('Location: admin.php');
+                $_SESSION['id'] = $account['nalog_id'];
+                $_SESSION['pristup'] = $account['pristup'];
+                header('Location: ' . $_SESSION['pristup'] . '/index.php');
                 exit();
             } else {
-                $error = "Pogrešna lozinka za admina!";
-            }
-        } else {
-            $qUser = $conn->prepare("SELECT * FROM korisnici WHERE korisnicko_ime = :uname LIMIT 1");
-            $qUser->execute([':uname' => $identity]);
-            $user = $qUser->fetch(PDO::FETCH_ASSOC);
-
-            if($user) {
-                if(password_verify($password, $user['sifra'])) {
-                    $_SESSION['user_logged'] = true;
-                    $_SESSION['username'] = $user['korisnicko_ime'];
-                    header("Location: index2.php");
-                    exit();
-                } else {
-                    $error = "Pogrešna lozinka za korisnika!";
-                }
-            } else {
-                $error = "Nalog ne postoji!";
+                $error = "Pogrešna lozinka!";
             }
         }
-    }
+        else 
+        {
+        $error = "Nalog ne postoji!";
+        }
+    } 
 }
 
 // --- LOGIKA ZA REGISTRACIJU (PREDNJA STRANA) ---
-if(isset($_POST['userLogin'])) {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $razred = $_POST['razred'];
-
-    if(!empty($username) && !empty($password) && !empty($razred)) {
-        $check = $conn->prepare("SELECT * FROM korisnici WHERE korisnicko_ime = ?");
-        $check->execute([$username]);
-        $userExist = $check->fetch();
-
-        if($userExist) {
-            if(password_verify($password, $userExist['sifra'])) {
-                $_SESSION['user_logged'] = true;
-                $_SESSION['username'] = $userExist['korisnicko_ime'];
-                header("Location: index2.php");
-                exit();
-            } else { $error = "Zauzeto ime ili pogrešna lozinka!"; }
-        } else {
-            $hashed_pw = password_hash($password, PASSWORD_DEFAULT);
-            $insert = $conn->prepare("INSERT INTO korisnici (korisnicko_ime, sifra, razred, email) VALUES (?, ?, ?, ?)");
-            if($insert->execute([$username, $hashed_pw, $razred, $username."@kviz.ba"])) {
-                $_SESSION['user_logged'] = true;
-                $_SESSION['username'] = $username;
-                header("Location: index2.php");
-                exit();
+if(isset($_POST['register'])) {
+    $email = $_POST['email-register'];
+    if(!empty($email))
+    {
+        if(!filter_var($email, FILTER_VALIDATE_EMAIL)) 
+        {
+            $error = "Neispravan format email adrese!";
+        }
+        else
+        {
+            $check = $conn->prepare("SELECT * FROM nalozi WHERE email = ?");
+            $check->execute([$email]);
+            $userExist = $check->fetch();
+            if($userExist)
+            {
+                $error = "Mail je već u upotrebi!";
+            }
+            else
+            {
+                $characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                $token = "";
+                for($i = 0; $i < 6; $i++) 
+                {
+                    $token .= $characters[rand(0, strlen($characters) - 1)];
+                }
+                $qInsert = $conn->prepare("INSERT INTO verifikacije_naloga (email, token, istek) VALUES (:email, :token, (CURRENT_TIMESTAMP + INTERVAL 15 MINUTE))");
+                $qInsert->bindParam(':email', $email);
+                $qInsert->bindParam(':token', $token);
+                $qInsert->execute();
+                $_SESSION['mail_data'] = [
+                    'email' => $email,
+                    'kod' => $token,
+                    'purpose' => 'register',
+                    'vrijeme' => time()
+                ];
+                header("Location: slanjeMaila.php");
             }
         }
-    } else { $error = "Popunite sva polja!"; }
+    }
+    else 
+    {
+    $error = "Email ne može biti prazan!";
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -91,6 +106,7 @@ if(isset($_POST['userLogin'])) {
     <link rel="stylesheet" href="dropdown.css">
     <style>
         .error-box { background: #fee2e2; color: #b91c1c; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; border: 1px solid #fecaca; text-align: center; }
+        .success-box { background: #fee2e2; color: #1cb953ff; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; border: 1px solid #fecaca; text-align: center; }
         
         /* NOVI DIZAJN: GORNJA NAVIGACIJA UNUTAR FORME */
         .form-nav-header {
@@ -139,6 +155,10 @@ if(isset($_POST['userLogin'])) {
                 <?php if($error != ""): ?>
                     <div class="error-box"><i class="bi bi-exclamation-triangle"></i> <?= $error ?></div>
                 <?php endif; ?>
+                                
+                <?php if($success != ""): ?>
+                    <div class="success-box"><i class="bi bi-check-circle"></i> <?= $success ?></div>
+                <?php endif; ?>
 
                 <ul>
                     <li>✓ 15 izazovnih pitanja po kvizu</li>
@@ -157,29 +177,10 @@ if(isset($_POST['userLogin'])) {
 
                         <form method="POST" action="">
                             <div class="input-group">
-                                <label>Korisničko ime</label>
-                                <input type="text" name="username" placeholder="npr. korisnik123" required>
+                                <label>Email</label>
+                                <input type="text" name="email-register" placeholder="email@email.com">
                             </div>
-                            <div class="input-group">
-                                <label>Lozinka</label>
-                                <input type="password" name="password" placeholder="Lozinka" required>
-                            </div>
-                            <div class="input-group">
-                                <div class="dropdown-container mb-3 w-100">
-                                    <div class="input-container">
-                                        <label>Vaš razred</label>
-                                        <input type="text" class="selected" id="razred_display_front" name="razred" placeholder="Odaberite" readonly required>
-                                        <i class="bi bi-arrow-down-short" id="arrow"></i>
-                                    </div>
-                                    <ul class="options-container">
-                                        <li class="option"><p>I</p></li>
-                                        <li class="option"><p>II</p></li>
-                                        <li class="option"><p>III</p></li>
-                                        <li class="option"><p>IV</p></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <button type="submit" name="userLogin" class="btn" style="width:100%">Započni kviz</button>
+                            <button type="submit" name="register" class="btn" style="width:100%">Registruj se</button>
                         </form>
                     </div>
 
@@ -192,13 +193,13 @@ if(isset($_POST['userLogin'])) {
                         <form method="POST" action="">
                             <div class="input-group">
                                 <label>Korisničko ime</label>
-                                <input type="text" name="adm-email" placeholder="Unesite podatke" required>
+                                <input type="text" name="login-email" placeholder="Unesite podatke" >
                             </div>
                             <div class="input-group">
                                 <label>Lozinka</label>
-                                <input type="password" name="adm-password" placeholder="Lozinka" required>
+                                <input type="password" name="login-password" placeholder="Lozinka">
                             </div>
-                            <button type="submit" name="adminLogin" class="btn" style="width:100%">Uloguj se</button>
+                            <button type="submit" name="login" class="btn" style="width:100%">Uloguj se</button>
                         </form>
                     </div>
                 </div>
@@ -229,14 +230,6 @@ if(isset($_POST['userLogin'])) {
             toFront.addEventListener('click', (e) => {
                 e.preventDefault();
                 flipper.classList.remove('is-flipped');
-            });
-
-            // Dropdown logika
-            document.querySelectorAll('.option').forEach(opt => {
-                opt.addEventListener('click', function() {
-                    const display = document.getElementById('razred_display_front');
-                    if(display) display.value = this.innerText.trim();
-                });
             });
         });
     </script>

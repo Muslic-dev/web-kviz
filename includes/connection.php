@@ -1,6 +1,6 @@
 <?php
 session_start();
-$dbname = "kvizomanija";
+$dbname = "kvizzz";
 $server = "localhost:3306";
 $user = "root";
 $pass = "";

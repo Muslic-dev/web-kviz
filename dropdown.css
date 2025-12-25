@@ -2,7 +2,7 @@
     position: relative;
 }
 
-#arrow{
+#arrow-razred{
   color: var(--bs-gray);
   position:absolute;
   right:12px;
@@ -43,4 +43,40 @@
 .option:hover{
     background-color: lightgray;
     transition-duration: 0.2s;
+}
+
+.otp-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 30px;
+    margin-bottom:40px;
+}
+
+.otp-input {
+    width: 45px;
+    height: 55px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: #f8f9fa;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.otp-input:focus {
+    border-color: #007bff; /* Boja tvoje glavne teme */
+    outline: none;
+    background: #fff;
+    box-shadow: 0 0 8px rgba(0,123,255,0.2);
+}
+
+.otp-divider {
+    font-size: 30px;
+    font-weight: bold;
+    color: #ccc;
 }
