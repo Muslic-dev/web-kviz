@@ -25,10 +25,16 @@ if (!isset($_SESSION['logged']) || $_SESSION['logged'] !== "yes") {
             <h4 class="mb-0"><i class="fa fa-plus-circle me-2"></i> Kreiraj Novi Kviz</h4>
         </div>
         <div class="card-body p-4">
-            <form action="spasiKviz.php" method="POST">
+            <form action="spasiKviz.php" method="POST" enctype="multipart/form-data">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Naziv kviza</label>
                     <input type="text" name="naziv_kviza" class="form-control" placeholder="npr. Geografija Svijeta" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Naslovna slika kviza</label>
+                    <input type="file" name="kviz_slika" class="form-control" accept="image/*">
+                    <div class="form-text">Preporučeno: pravougaona slika (npr. 800x400px).</div>
                 </div>
                 
                 <div class="row">
