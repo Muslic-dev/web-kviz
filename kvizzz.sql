@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 24, 2025 at 11:37 PM
+-- Generation Time: Dec 26, 2025 at 12:53 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -35,8 +35,20 @@ CREATE TABLE `kvizovi` (
   `pocetak` datetime DEFAULT NULL,
   `rok_predaje` datetime DEFAULT NULL,
   `vremensko_ogranicenje` int(11) NOT NULL DEFAULT 15,
-  `broj_pitanja` int(11) NOT NULL DEFAULT 15
+  `broj_pitanja` int(11) NOT NULL DEFAULT 15,
+  `slika` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `kvizovi`
+--
+
+INSERT INTO `kvizovi` (`kviz_id`, `profesor_id`, `naziv_kviza`, `vrijeme_kreiranja`, `pocetak`, `rok_predaje`, `vremensko_ogranicenje`, `broj_pitanja`, `slika`) VALUES
+(1, 1, 'Opće znanje', '2025-12-26 11:18:14', NULL, NULL, 15, 15, 'default.jpg'),
+(2, 1, 'IT & Tehnologija', '2025-12-26 11:18:14', NULL, NULL, 15, 15, 'default.jpg'),
+(3, 1, 'Sport', '2025-12-26 11:18:14', NULL, NULL, 15, 15, 'default.jpg'),
+(9, NULL, 'Geografija', '2025-12-26 11:18:14', NULL, NULL, 15, 2, 'slika_1766441088_6949c080aa565.jpg'),
+(10, NULL, 'Fizika', '2025-12-26 11:18:14', NULL, NULL, 15, 3, 'slika_1766442400_6949c5a01bafd.jpg');
 
 -- --------------------------------------------------------
 
@@ -52,17 +64,17 @@ CREATE TABLE `nalozi` (
   `razred_odjeljenje` varchar(4) DEFAULT NULL,
   `email` varchar(50) NOT NULL,
   `sifra` varchar(100) DEFAULT NULL,
-  `token` varchar(255) DEFAULT NULL,
-  `token_timeout` timestamp NULL DEFAULT NULL
+  `datum_registracije` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `nalozi`
 --
 
-INSERT INTO `nalozi` (`nalog_id`, `ime_prezime`, `pristup`, `aktiviran`, `razred_odjeljenje`, `email`, `sifra`, `token`, `token_timeout`) VALUES
-(1, 'Admin Nalog', 'admin', 1, NULL, 'admin@admin.com', '$2y$10$kEemvXJ3AMEgB3gEcsnhte1Yqyw7oOGT7nbEqg/pd/FWgLPul/im.', NULL, '2025-12-24 20:49:12'),
-(2, 'Jasmin Muslić', 'ucenik', 0, 'I', 'muslicj.007@gmail.com', '$2y$10$Xv6wL0jBSd0vNoh2GY925OA1iNU0CwSyZCTk2yVvBjwW9mErlg62O', NULL, '2025-12-24 20:49:12');
+INSERT INTO `nalozi` (`nalog_id`, `ime_prezime`, `pristup`, `aktiviran`, `razred_odjeljenje`, `email`, `sifra`, `datum_registracije`) VALUES
+(1, 'Admin Nalog', 'admin', 1, NULL, 'admin@admin.com', '$2y$10$kEemvXJ3AMEgB3gEcsnhte1Yqyw7oOGT7nbEqg/pd/FWgLPul/im.', '2025-12-26 10:41:23'),
+(2, 'Jasmin Muslić', 'ucenik', 0, 'I', 'muslicj.007@gmail.com', '$2y$10$Xv6wL0jBSd0vNoh2GY925OA1iNU0CwSyZCTk2yVvBjwW9mErlg62O', '2025-12-26 10:41:23'),
+(4, 'Test Ucenik', 'ucenik', 0, 'I2', 'mikajlo367@gmail.com', '$2y$10$S7.qSH2lqwT.RrqIFM.szuHkeHd3f5jUHUItjAq04Bf15rQcSX6v6', '2025-12-26 10:44:05');
 
 -- --------------------------------------------------------
 
@@ -100,10 +112,44 @@ CREATE TABLE `rezultati` (
   `ucenik_id` int(11) DEFAULT NULL,
   `kviz_id` int(11) DEFAULT NULL,
   `predano` datetime DEFAULT NULL,
-  `vrijeme_izrade` time DEFAULT NULL,
   `odgovori_json` text DEFAULT NULL,
-  `bodovi` int(11) DEFAULT NULL
+  `bodovi` int(11) DEFAULT NULL,
+  `vrijeme_izrade` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `rezultati`
+--
+
+INSERT INTO `rezultati` (`rezultat_id`, `ucenik_id`, `kviz_id`, `predano`, `odgovori_json`, `bodovi`, `vrijeme_izrade`) VALUES
+(5, 4, 1, NULL, NULL, 1, 99),
+(6, 4, 1, NULL, NULL, 9, 67),
+(7, 4, 3, NULL, NULL, 3, 146),
+(8, 4, 2, NULL, NULL, 7, 120),
+(9, 4, 9, NULL, NULL, 14, 55),
+(10, 4, 1, NULL, NULL, 2, 145);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `verifikacije_naloga`
+--
+
+CREATE TABLE `verifikacije_naloga` (
+  `email` varchar(100) DEFAULT NULL,
+  `token` varchar(6) DEFAULT NULL,
+  `istek` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `verifikacije_naloga`
+--
+
+INSERT INTO `verifikacije_naloga` (`email`, `token`, `istek`) VALUES
+('aaa@aaa.com', '2WQORN', '2025-12-25 01:47:24'),
+('aaa@aaa.com', 'WZUR68', '2025-12-25 02:09:00'),
+('aaa@aaa.com', 'OBFBNS', '2025-12-25 02:09:07'),
+('aaa@aaa.com', 'H9UD3W', '2025-12-25 02:45:15');
 
 --
 -- Indexes for dumped tables
@@ -153,13 +199,13 @@ ALTER TABLE `rezultati`
 -- AUTO_INCREMENT for table `kvizovi`
 --
 ALTER TABLE `kvizovi`
-  MODIFY `kviz_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `kviz_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `nalozi`
 --
 ALTER TABLE `nalozi`
-  MODIFY `nalog_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `nalog_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `odgovori`
@@ -177,7 +223,7 @@ ALTER TABLE `pitanja`
 -- AUTO_INCREMENT for table `rezultati`
 --
 ALTER TABLE `rezultati`
-  MODIFY `rezultat_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `rezultat_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Constraints for dumped tables
@@ -207,6 +253,14 @@ ALTER TABLE `pitanja`
 ALTER TABLE `rezultati`
   ADD CONSTRAINT `rezultati_ibfk_1` FOREIGN KEY (`ucenik_id`) REFERENCES `nalozi` (`nalog_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `rezultati_ibfk_2` FOREIGN KEY (`kviz_id`) REFERENCES `kvizovi` (`kviz_id`) ON DELETE CASCADE;
+
+DELIMITER $$
+--
+-- Events
+--
+CREATE DEFINER=`root`@`localhost` EVENT `ocisti_istekle_verifikacije` ON SCHEDULE EVERY 15 MINUTE STARTS '2025-12-25 00:53:24' ON COMPLETION NOT PRESERVE ENABLE DO DELETE FROM verifikacije_naloga WHERE iste < NOW()$$
+
+DELIMITER ;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

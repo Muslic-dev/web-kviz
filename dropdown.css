@@ -2,7 +2,7 @@
     position: relative;
 }
 
-#arrow-razred{
+#arrow{
   color: var(--bs-gray);
   position:absolute;
   right:12px;

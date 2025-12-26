@@ -1,7 +1,7 @@
 const selected = document.querySelector(".selected");
 const optionsContainer = document.querySelector(".options-container");
 const optionsList = document.querySelectorAll(".option");
-const arrow = document.querySelector("#arrow-razred");
+const arrow = document.querySelector("#arrow");
 let isArrowClicked = false;
 
 selected.onfocus = ()=> 
@@ -12,6 +12,17 @@ selected.onfocus = ()=>
     {
         arrow.classList.remove("bi-arrow-down-short");
         arrow.classList.add("bi-arrow-up-short");
+    }
+}
+
+selected.onblur = ()=> 
+{
+    selected.style.backgroundColor = "white";
+    optionsContainer.classList.toggle("active");
+    if(arrow.classList.contains("bi-arrow-up-short"))
+    {
+        arrow.classList.remove("bi-arrow-up-short");
+        arrow.classList.add("bi-arrow-down-short");
     }
 }
 
@@ -34,17 +45,6 @@ arrow.addEventListener('click', function(e)
     }
     isArrowClicked = false;
 })
-
-selected.onblur = ()=> 
-{
-    selected.style.backgroundColor = "white";
-    optionsContainer.classList.toggle("active");
-    if(arrow.classList.contains("bi-arrow-up-short"))
-    {
-        arrow.classList.remove("bi-arrow-up-short");
-        arrow.classList.add("bi-arrow-down-short");
-    }
-}
 
 optionsList.forEach((item)=> (item.onclick = ()=>
 {

@@ -33,6 +33,7 @@ if(isset($_POST['login']))
                 $_SESSION['logged'] = "yes";
                 $_SESSION['id'] = $account['nalog_id'];
                 $_SESSION['pristup'] = $account['pristup'];
+                $_SESSION['username'] = $account['ime_prezime'];
                 header('Location: ' . $_SESSION['pristup'] . '/index.php');
                 exit();
             } else {
@@ -105,9 +106,6 @@ if(isset($_POST['register'])) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="dropdown.css">
     <style>
-        .error-box { background: #fee2e2; color: #b91c1c; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; border: 1px solid #fecaca; text-align: center; }
-        .success-box { background: #fee2e2; color: #1cb953ff; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; border: 1px solid #fecaca; text-align: center; }
-        
         /* NOVI DIZAJN: GORNJA NAVIGACIJA UNUTAR FORME */
         .form-nav-header {
             display: flex;
@@ -192,7 +190,7 @@ if(isset($_POST['register'])) {
 
                         <form method="POST" action="">
                             <div class="input-group">
-                                <label>Korisničko ime</label>
+                                <label>Email</label>
                                 <input type="text" name="login-email" placeholder="Unesite podatke" >
                             </div>
                             <div class="input-group">

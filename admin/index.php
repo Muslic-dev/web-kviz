@@ -12,9 +12,9 @@ if (!isset($_SESSION['logged']) || $_SESSION['logged'] !== "yes") {
 if (isset($_POST['delete_id'])) {
     $id_za_brisanje = $_POST['delete_id'];
     try {
-        $stmt = $conn->prepare("DELETE FROM korisnici WHERE korisnik_id = ?");
+        $stmt = $conn->prepare("DELETE FROM nalozi WHERE nalog_id = ?");
         $stmt->execute([$id_za_brisanje]);
-        header("Location: admin.php?poruka=obrisano");
+        header("Location: index.php?poruka=obrisano");
         exit();
     } catch (PDOException $e) {
         $greska_brisanje = "Greška pri brisanju: " . $e->getMessage();
@@ -39,12 +39,12 @@ if (isset($_POST['delete_quiz_id'])) {
 try {
     // 2. Statistika za gornje kartice
     $br_kvizova = $conn->query("SELECT COUNT(*) FROM kvizovi")->fetchColumn();
-    $br_korisnika = $conn->query("SELECT COUNT(*) FROM korisnici")->fetchColumn(); 
+    $br_korisnika = $conn->query("SELECT COUNT(*) FROM nalozi WHERE pristup = 'ucenik'")->fetchColumn(); 
     $br_rezultata = $conn->query("SELECT COUNT(*) FROM rezultati")->fetchColumn();
-    $br_admina = $conn->query("SELECT COUNT(*) FROM admini")->fetchColumn();
+    $br_admina = $conn->query("SELECT COUNT(*) FROM nalozi WHERE pristup = 'admin'")->fetchColumn();
 
     // 3. Dohvaćanje registrovanih korisnika
-    $sql_korisnici = "SELECT * FROM korisnici ORDER BY korisnik_id DESC";
+    $sql_korisnici = "SELECT * FROM nalozi WHERE pristup = 'ucenik' ORDER BY nalog_id DESC";
     $korisnici = $conn->query($sql_korisnici)->fetchAll(PDO::FETCH_ASSOC);
 
     // 4. Dohvaćanje svih kvizova
@@ -96,7 +96,7 @@ try {
         <li><a href="#tabela-korisnika" class="nav-link"><i class="fa fa-users me-2"></i> Korisnici</a></li>
     </ul>
     <hr>
-    <a href="logout.php" class="btn btn-danger w-100"><i class="fa fa-sign-out-alt"></i> Odjavi se</a>
+    <a href="../logout.php" class="btn btn-danger w-100"><i class="fa fa-sign-out-alt"></i> Odjavi se</a>
 </div>
 
 <div id="content">
@@ -204,14 +204,14 @@ try {
                         <?php if (count($korisnici) > 0): ?>
                             <?php foreach ($korisnici as $k): ?>
                             <tr>
-                                <td>#<?= $k['korisnik_id'] ?></td>
-                                <td class="fw-bold"><?= htmlspecialchars($k['korisnicko_ime']) ?></td>
+                                <td>#<?= $k['nalog_id'] ?></td>
+                                <td class="fw-bold"><?= htmlspecialchars($k['ime_prezime']) ?></td>
                                 <td><?= htmlspecialchars($k['email']) ?></td>
-                                <td><span class="badge bg-primary"><?= htmlspecialchars($k['razred']) ?></span></td>
+                                <td><span class="badge bg-primary"><?= htmlspecialchars($k['razred_odjeljenje']) ?></span></td>
                                 <td class="small text-muted"><?= $k['datum_registracije'] ?></td>
                                 <td class="text-center">
                                     <form method="POST" onsubmit="return confirm('Da li ste sigurni da želite obrisati ovog korisnika?');" style="display:inline;">
-                                        <input type="hidden" name="delete_id" value="<?= $k['korisnik_id'] ?>">
+                                        <input type="hidden" name="delete_id" value="<?= $k['nalog_id'] ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">
                                             <i class="fa fa-trash"></i> Obriši
                                         </button>

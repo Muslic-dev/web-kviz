@@ -1,5 +1,5 @@
 <?php
-require "includes/connection.php";
+require "../includes/connection.php";
 
 // Provjera sesije
 if (!isset($_SESSION['username'])) {
@@ -204,7 +204,7 @@ function finishQuiz() {
 
     fetch('pokreniKviz.php', {
         method: 'POST',
-        body: new URLSearchParams(formData)
+        body: formData
     })
     .then(response => response.text())
     .then(data => console.log("Baza kaže:", data));
@@ -221,7 +221,7 @@ function finishQuiz() {
                 <p style="margin: 10px 0; font-size: 1.1rem;">Vrijeme: <strong style="color: #667eea;">${ukupnoSekundi} sekundi</strong></p>
             </div>
             
-            <a href="index2.php" class="btn">Nazad na Rang Listu</a>
+            <a href="index.php" class="btn">Nazad na Rang Listu</a>
         </div>`;
 }
 </script>

@@ -1,7 +1,8 @@
 <?php
-require "includes/connection.php"; 
+require "../includes/connection.php"; 
 
-if (!isset($_SESSION['username'])) { 
+if (!isset($_SESSION['logged']) || $_SESSION['logged'] !== 'yes' || $_SESSION['pristup'] !== 'ucenik') 
+{ 
     header("Location: index.php"); 
     exit(); 
 }
@@ -12,18 +13,18 @@ function dohvatiStatus($conn, $kviz_id, $korisnik) {
     $stmt->execute([$korisnik, $kviz_id]);
     $rez = $stmt->fetch();
     if(!$rez) return "Nije započeto";
-    if($rez['prezime'] == 'Započeto') return "<span style='color:#f39c12;'>Započeto</span>";
+    //if($rez['prezime'] == 'Započeto') return "<span style='color:#f39c12;'>Započeto</span>";
     return "<span style='color:#27ae60;'>Rezultat: " . htmlspecialchars($rez['prezime']) . "</span>";
 }
 
 function dohvatiTopRezultate($conn, $kviz_id) {
     $stmt = $conn->prepare("
-        SELECT ime, prezime, sekunde 
-        FROM rezultati 
-        WHERE kviz_id = ? AND prezime != 'Započeto' 
+        SELECT ime_prezime, vrijeme_izrade, bodovi
+        FROM rezultati, nalozi
+        WHERE kviz_id = ? AND  rezultati.ucenik_id = nalozi.nalog_id 
         ORDER BY 
-            CAST(SUBSTRING_INDEX(prezime, ' ', 1) AS UNSIGNED) DESC, 
-            sekunde ASC 
+            CAST(SUBSTRING_INDEX(bodovi, ' ', 1) AS UNSIGNED) DESC, 
+            vrijeme_izrade ASC 
         LIMIT 3
     ");
     $stmt->execute([$kviz_id]);
@@ -41,7 +42,7 @@ $svi_kvizovi_iz_baze = $stmt_kvizovi->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="style2.css">
+    <link rel="stylesheet" href="../style2.css">
     <style>
         .header-actions { display: flex; align-items: center; }
         .user-info { font-weight: bold; color: #2563eb; margin-right: 15px; }
@@ -123,7 +124,7 @@ $svi_kvizovi_iz_baze = $stmt_kvizovi->fetchAll(PDO::FETCH_ASSOC);
         <h1 class="logo">Kvizomanija</h1>
         <div class="header-actions">
             <div class="user-info">Ulogovan: <?= htmlspecialchars($korisnik) ?> 👋</div>
-            <a href="index.php" class="logout-btn">
+            <a href="../logout.php" class="logout-btn">
                 <i class="bi bi-box-arrow-right"></i> Odjavi se
             </a>
         </div>
@@ -136,13 +137,13 @@ $svi_kvizovi_iz_baze = $stmt_kvizovi->fetchAll(PDO::FETCH_ASSOC);
             <?php foreach ($svi_kvizovi_iz_baze as $k): 
                 $id = $k['kviz_id'];
                 
-                if (!empty($k['slika']) && file_exists("uploads/" . $k['slika'])) {
-                    $slika_putanja = "uploads/" . $k['slika'];
+                if (!empty($k['slika']) && file_exists("../uploads/" . $k['slika'])) {
+                    $slika_putanja = "../uploads/" . $k['slika'];
                 } else {
-                    if ($id == 1) $slika_putanja = "slike/einstein.png";
-                    elseif ($id == 2) $slika_putanja = "slike/technology.png";
-                    elseif ($id == 3) $slika_putanja = "slike/footbal.jpg";
-                    else $slika_putanja = "slike/default.png";
+                    if ($id == 1) $slika_putanja = "../slike/einstein.png";
+                    elseif ($id == 2) $slika_putanja = "../slike/technology.png";
+                    elseif ($id == 3) $slika_putanja = "../slike/footbal.jpg";
+                    else $slika_putanja = "../slike/default.png";
                 }
 
                 $opis = "Testiraj svoje znanje u ovoj kategoriji.";
@@ -160,7 +161,7 @@ $svi_kvizovi_iz_baze = $stmt_kvizovi->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                     <div>
                         <a href="brojacKvizova.php?kviz_id=<?= $id ?>" class="play-btn" style="text-decoration: none; background: #667eea; color: white; padding: 12px 25px; border-radius: 10px; display: inline-block; width: 100%; box-sizing: border-box; font-weight: 600; transition: 0.3s;">Započni kviz</a>
-                        <span class="status-info"><?= dohvatiStatus($conn, $id, $korisnik) ?></span>
+                        <!-- <span class="status-info">// dohvatiStatus($conn, $id, $korisnik)</span> -->
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -169,7 +170,9 @@ $svi_kvizovi_iz_baze = $stmt_kvizovi->fetchAll(PDO::FETCH_ASSOC);
         <section class="extra-section">
             <h3 style="margin-top: 40px; text-align: center; color: #1e293b;">🏆 Top 3 Rezultata po Kvizovima</h3>
             <div class="stats-container">
-                <?php foreach ($svi_kvizovi_iz_baze as $k): 
+                <?php
+
+                foreach ($svi_kvizovi_iz_baze as $k): 
                     $id = $k['kviz_id'];
                     $top = dohvatiTopRezultate($conn, $id);
                 ?>
@@ -181,11 +184,11 @@ $svi_kvizovi_iz_baze = $stmt_kvizovi->fetchAll(PDO::FETCH_ASSOC);
                             <li>
                                 <span>
                                     <span class="rank"><?= $i + 1 ?>.</span> 
-                                    <?= htmlspecialchars($r['ime']) ?>
+                                    <?= htmlspecialchars($r['ime_prezime']) ?>
                                 </span>
                                 <div style="text-align: right;">
-                                    <span class="score"><?= htmlspecialchars($r['prezime']) ?></span>
-                                    <span class="time-label"><i class="bi bi-clock"></i> <?= (int)$r['sekunde'] ?>s</span>
+                                    <span class="score"><?= htmlspecialchars($r['bodovi']) ?></span>
+                                    <span class="time-label"><i class="bi bi-clock"></i> <?= (int)$r['vrijeme_izrade'] ?>s</span>
                                 </div>
                             </li>
                             <?php endforeach; ?>

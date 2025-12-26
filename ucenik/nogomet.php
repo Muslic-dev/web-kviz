@@ -1,5 +1,5 @@
 <?php
-require "includes/connection.php";
+require "../includes/connection.php";
 
 // Provjera sesije
 if (!isset($_SESSION['username'])) {
@@ -203,7 +203,7 @@ function finishQuiz() {
                 <p style="font-size: 1.2rem;">Postignuti golovi: <strong style="color: #48bb78;">${score} / ${questions.length}</strong></p>
                 <p style="font-size: 1.1rem;">Vrijeme: <strong style="color: #2e7d32;">${ukupnoSekundi}s</strong></p>
             </div>
-            <a href="index2.php" class="btn">Nazad na tabelu</a>
+            <a href="index.php" class="btn">Nazad na tabelu</a>
         </div>`;
 }
 </script>

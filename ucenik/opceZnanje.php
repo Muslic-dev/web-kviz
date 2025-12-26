@@ -1,5 +1,5 @@
 <?php
-require "includes/connection.php";
+require "../includes/connection.php";
 
 // Provjera sesije
 if (!isset($_SESSION['username'])) {
@@ -194,11 +194,11 @@ function finishQuiz() {
 
     // SLANJE U BAZU (SADA UKLJUČUJE I VRIJEME)
     const formData = new FormData();
-    formData.append('score', score);
+    formData.append('bodovi', score);
     formData.append('max', questions.length);
-    formData.append('sekunde', ukupnoSekundi);
+    formData.append('vrijeme_izrade', ukupnoSekundi);
 
-    fetch('pokreniKviz.php', {
+    fetch('unesiKviz.php', {
         method: 'POST',
         body: new URLSearchParams(formData)
     })
@@ -216,7 +216,7 @@ function finishQuiz() {
                 <p style="margin: 10px 0; font-size: 1.1rem;">Vrijeme: <strong style="color: #d97706;">${ukupnoSekundi} sekundi</strong></p>
             </div>
             
-            <a href="index2.php" class="btn">Nazad na Rang Listu</a>
+            <a href="index.php" class="btn">Nazad na Rang Listu</a>
         </div>`;
 }
 </script>

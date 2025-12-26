@@ -1,5 +1,5 @@
 <?php
-require "includes/connection.php";
+require "../includes/connection.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $kviz_id = $_POST['kviz_id'];

@@ -41,6 +41,9 @@ header .container {
     font-size: 24px;
 }
 
+.error-box { background: #fee2e2; color: #b91c1c; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; border: 1px solid #fecaca; text-align: center; }
+.success-box { background: #e4fee2; color: #1cb953ff; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; border: 1px solid #fecaca; text-align: center; }
+
 nav ul { list-style: none; display: flex; }
 nav ul li { margin-left: 25px; }
 nav ul li a { text-decoration: none; color: #555; font-weight: 600; transition: color 0.3s ease; }
